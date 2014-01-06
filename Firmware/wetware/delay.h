@@ -1,7 +1,7 @@
 #include <avr/wdt.h>
 
 #define WDT_TIME 4000
-#define SIM_CHECK 30
+#define SIM_CHECK 15
 
 void watchdogDelay(long Delay)
 {
