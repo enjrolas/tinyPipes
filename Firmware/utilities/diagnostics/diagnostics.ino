@@ -13,24 +13,36 @@ void setup()
   pinMode(GSM_POWER, OUTPUT);
   Serial.begin(9600);
   GSM.begin(9600);
+  Serial.println("waking up");
   setupWatchdog();
   bootGSMModule();
+  diagnostics();
 }
 
 void diagnostics()
 {
-   command("AT+CSQ", "signal strength");
+  command("AT+CGMI", "Manufacturer");
+  command("AT+CGMM", "Module");
+  command("AT+CGMR", "Revision");
+  command("AT+CNUM", "Phone Number");
+  command("AT+CSQ",  "Signal Strength");
 }
 
 void command(String commandString, String label)
 {
   Serial<<label<<":\r\n";
-  GSM.println(commandstring);
+  GSM.println(commandString);
+  int i;
+  for(i=0;i<4;i++)
+    readLine();
+  watchdogDelay(1000);
 }
 
 void loop()
 {
-    wdt_reset();
+  wdt_reset();
+  if(millis()%30000==0)
+    diagnostics();
   if(Serial.available()>0)
     GSM.write(Serial.read());
   if(GSM.available()>0)
@@ -46,12 +58,12 @@ void bootGSMModule()
   String line=readLine();
   if(line.equals("OK"))  //module is up, turn it off
   {
-  #ifdef DEBUG  
-      Serial.println("module is on, turning it off");
-  #endif
+#ifdef DEBUG  
+    Serial.println("module is on, turning it off");
+#endif
     GSM.print("AT+CPOWD=1\r\n");
   }
-  
+
   delay(1000);
 
   Serial.println("booting the module");
@@ -59,7 +71,10 @@ void bootGSMModule()
   digitalWrite(GSM_POWER, HIGH);
   watchdogDelay(3000);
   digitalWrite(GSM_POWER, LOW);
+  watchdogDelay(3000);
   Serial.println("module is booted");
+  while(GSM.available()>0)
+    Serial.write(GSM.read());
 
 }
 
@@ -80,11 +95,12 @@ String readLine()
   }
   while((a!='\n')&&((millis()-start)<timeout));
   if((millis()-start)>timeout)
-  #ifdef DEBUG  
+#ifdef DEBUG  
     Serial<<"string timed out:"<<line<<endl;
-  #endif
+#endif
   line.trim();
   Serial.println(line);
   return line;
 }
+
 
