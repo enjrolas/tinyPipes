@@ -4496,18 +4496,12 @@ diameter 3.3 mm, vertical, grid 10.16 mm</description>
 <text x="1.905" y="5.715" size="1.778" layer="25" ratio="10">&gt;NAME</text>
 </package>
 <package name="0210">
-<wire x1="-5" y1="-3" x2="-3.81" y2="-3" width="0.127" layer="21"/>
-<wire x1="-1.27" y1="-3" x2="1.27" y2="-3" width="0.127" layer="21"/>
-<wire x1="3.81" y1="-3" x2="5" y2="-3" width="0.127" layer="21"/>
-<wire x1="5" y1="-3" x2="5" y2="-18" width="0.127" layer="21"/>
-<wire x1="5" y1="-18" x2="-5" y2="-18" width="0.127" layer="21"/>
-<wire x1="-5" y1="-18" x2="-5" y2="-3" width="0.127" layer="21"/>
-<wire x1="-3.81" y1="-3" x2="-3.81" y2="0" width="0.127" layer="21"/>
-<wire x1="-3.81" y1="0" x2="-1.27" y2="0" width="0.127" layer="21"/>
-<wire x1="-1.27" y1="0" x2="-1.27" y2="-3" width="0.127" layer="21"/>
-<wire x1="3.81" y1="0" x2="1.27" y2="0" width="0.127" layer="21"/>
-<wire x1="1.27" y1="0" x2="1.27" y2="-3" width="0.127" layer="21"/>
-<wire x1="3.81" y1="0" x2="3.81" y2="-3" width="0.127" layer="21"/>
+<wire x1="-5" y1="-3" x2="-3.81" y2="-3" width="0" layer="21"/>
+<wire x1="-1.27" y1="-3" x2="1.27" y2="-3" width="0" layer="21"/>
+<wire x1="3.81" y1="-3" x2="5" y2="-3" width="0" layer="21"/>
+<wire x1="5" y1="-3" x2="5" y2="-18" width="0" layer="21" style="shortdash"/>
+<wire x1="5" y1="-18" x2="-5" y2="-18" width="0" layer="21" style="shortdash"/>
+<wire x1="-5" y1="-18" x2="-5" y2="-3" width="0" layer="21" style="shortdash"/>
 <rectangle x1="-5" y1="-18.016" x2="5" y2="-3.016" layer="39"/>
 <pad name="1" x="-2.54" y="0" drill="1" diameter="1.8"/>
 <pad name="2" x="2.5" y="0" drill="1" diameter="1.8"/>
@@ -5079,6 +5073,10 @@ diameter 3.3 mm, vertical, grid 10.16 mm</description>
 <pad name="P$2" x="0.508" y="0" drill="1.2" diameter="3" shape="square"/>
 <text x="-3.175" y="3.175" size="1.27" layer="21">&gt;NAME</text>
 <text x="-5.08" y="-3.81" size="0.889" layer="46" ratio="11">slot the drill with copper</text>
+</package>
+<package name="TINYPIPES_SBATT">
+<pad name="P$1" x="0" y="0" drill="0.8"/>
+<text x="-1.27" y="1.27" size="1.27" layer="25">&gt;NAME</text>
 </package>
 </packages>
 <symbols>
@@ -8350,6 +8348,14 @@ DIN A4, landscape with location and doc. field</description>
 <device name="PANEL" package="TINYPIPES_PANEL">
 <connects>
 <connect gate="G$1" pin="P$1" pad="P$1 P$2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="SBATT" package="TINYPIPES_SBATT">
+<connects>
+<connect gate="G$1" pin="P$1" pad="P$1"/>
 </connects>
 <technologies>
 <technology name=""/>
