@@ -1,7 +1,8 @@
 #include <avr/wdt.h>
+#include <Arduino.h>
 
 #define WDT_TIME 4000
-#define SIM_CHECK 15
+#define SIM_CHECK 30
 
 void watchdogDelay(long Delay)
 {

@@ -6,7 +6,7 @@
 #include "stringHandling.h"
 #include "charging.h"
 
-//#define DEBUG 0
+#define DEBUG 0
 
 #define PANEL_EN 5
 #define PANEL_CURRENT 0
@@ -80,7 +80,7 @@ void bootGSMModule()
   #endif
     GSM.print("AT+CPOWD=1\r\n");
   }
-
+  watchdogDelay(2000);
   //turn it on
   digitalWrite(GSM_POWER, HIGH);
   watchdogDelay(3000);
@@ -133,7 +133,7 @@ int checkSIM()
   readLine();  //the second line is blank, too
   String response=readLine();
   Serial.println(response);
-  if((response.indexOf("ERROR")>=0) || (response.indexOf("NOT")>=0))
+  if((response.indexOf("ERROR")>=0) || (response.indexOf("NOT")>=0) || (response.equals("")))
   {
     #ifdef DEBUG  
     Serial.println("looks like there's some problem with the SIM.  Rebooting the cell module");
