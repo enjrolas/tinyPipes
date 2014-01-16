@@ -4736,7 +4736,7 @@ design rules under a new name.</description>
 <element name="L1+" library="tinyPipes_v2.5" package="TINYPIPES_BATT" value="TINYPIPES_BATTBATT" x="33.782" y="31.242"/>
 <element name="L1-" library="tinyPipes_v2.5" package="TINYPIPES_BATT" value="TINYPIPES_BATTBATT" x="24.13" y="32.004"/>
 <element name="R2" library="Discrete" package="R0603" value="10k" x="13.208" y="37.592" rot="R90"/>
-<element name="D1" library="diode" package="SOD80C" value="" x="15.24" y="36.83" rot="R270"/>
+<element name="D1" library="diode" package="SOD80C" value="5v" x="15.24" y="36.83" rot="R270"/>
 <element name="L2+" library="tinyPipes_v2.5" package="TINYPIPES_BATT" value="TINYPIPES_BATTBATT" x="5.842" y="45.72"/>
 <element name="L2-" library="tinyPipes_v2.5" package="TINYPIPES_BATT" value="TINYPIPES_BATTBATT" x="5.588" y="53.594"/>
 <element name="C12" library="Discrete" package="AVX-D" value="470uF 6.3V" x="11.43" y="52.324" rot="R270"/>

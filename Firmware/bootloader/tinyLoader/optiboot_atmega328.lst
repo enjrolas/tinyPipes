@@ -158,7 +158,7 @@ void watchdogReset() {
       if (address >= NRWWSTART) __boot_page_erase_short((uint16_t)(void*)address);
     7e5c:	b3 e0       	ldi	r27, 0x03	; 3
     7e5e:	fb 2e       	mov	r15, r27
-#endif
+
 
   /* Forever loop */
   for (;;) {

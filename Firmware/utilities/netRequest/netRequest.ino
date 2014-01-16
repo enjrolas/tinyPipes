@@ -17,6 +17,8 @@ float wattSeconds, averageBatteryVoltage, averagePanelVoltage, averagePanelCurre
 int index=0;
 int samples=0;
 int m=0;
+boolean httpSetup=false;
+boolean panelConnected=false;
 
 int cycles=0;
 SoftwareSerial GSM(3,2);
@@ -38,7 +40,6 @@ void setup()
  // sendSMS("+639209011401","entering into the realm of the living");  //tonito number
   //sendSMS("+639471782972","entering into the realm of the living");
   setupWatchdog();
-  connectPanel();
 }
 
 //boots or reboots the GSM module 
@@ -120,7 +121,7 @@ void flush()
 
 void loop()
 {
-  if(cycles%5==0)
+  if(cycles%1==0)
   {
     readValues();
     String url="http://valve.tinypipes.net/measurement/";
@@ -131,8 +132,21 @@ void loop()
     url=url+"/";
     url=url+buffer;    
     url=url+"/";
+    url=url+panelConnected;
+    url=url+"/";
     Serial.println(url);
-    submitHttpRequest(url);
+    String data=submitHttpRequest(url);
+    Serial.println(data);
+    if(data=="True")
+    {
+      connectPanel();
+      Serial.println("connecting panel");
+    }
+    else
+    {
+      Serial.println("connecting panel");
+      disconnectPanel();
+    }
     checkSIM();
   }
   watchdogDelay(1000);
@@ -181,59 +195,72 @@ void sendSMS(String number, String message)
 
 }
 
+void setupHttp()
+{
+  GSM.println("AT+CGATT?");
+  watchdogDelay(500);
+ 
+  showSerialData();
+ 
+  GSM.println("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");//setting the SAPBR, the connection type is using gprs
+  watchdogDelay(1000);
+ 
+  showSerialData();
+ 
+  GSM.println("AT+SAPBR=3,1,\"APN\",\"CMNET\"");//setting the APN, the second need you fill in your local apn server
+//  GSM.println("AT+SAPBR=3,1,\"APN\",\"hkcsl\"");//setting the APN, the second need you fill in your local apn server
+  watchdogDelay(4000);
+ 
+  showSerialData();
+ 
+  GSM.println("AT+SAPBR=1,1");//setting the SAPBR, for detail you can refer to the AT command mamual
+  watchdogDelay(2000);
+ 
+  showSerialData(); 
+}
+
 ///SubmitHttpRequest()
 ///this function is submit a http GET request
 ///attention:the time of delay is very important, it must be set enough 
-void submitHttpRequest(String url)
+String submitHttpRequest(String url)
 {
-  GSM.println("AT+CGATT?");
-  watchdogDelay(500);
- 
-  showSerialData();
- 
-  GSM.println("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");//setting the SAPBR, the connection type is using gprs
-  watchdogDelay(1000);
- 
-  showSerialData();
- 
-  GSM.println("AT+SAPBR=3,1,\"APN\",\"CMNET\"");//setting the APN, the second need you fill in your local apn server
-  watchdogDelay(4000);
- 
-  showSerialData();
- 
-  GSM.println("AT+SAPBR=1,1");//setting the SAPBR, for detail you can refer to the AT command mamual
-  watchdogDelay(2000);
- 
-  showSerialData();
- 
+  if(!httpSetup)
+  {
+    setupHttp();
+    httpSetup=true;
+  }
   GSM.println("AT+HTTPINIT"); //init the HTTP request
  
-  watchdogDelay(2000); 
+  watchdogDelay(500); 
   showSerialData();
  
   GSM.print("AT+HTTPPARA=\"URL\",\"");
   GSM.print(url);
   GSM.println("\"");// setting the httppara, the second parameter is the website you want to access
-  watchdogDelay(1000);
+  watchdogDelay(500);
  
   showSerialData();
  
   GSM.println("AT+HTTPACTION=0");//submit the request 
-  watchdogDelay(10000);//the delay is very important, the delay time is base on the return from the website, if the return datas are very large, the time required longer.
+  watchdogDelay(3000);//the delay is very important, the delay time is base on the return from the website, if the return datas are very large, the time required longer.
   //while(!GSM.available());
  
   showSerialData();
  
   GSM.println("AT+HTTPREAD");// read the data from the website you access
   delay(500);
- 
-  showSerialData();
- 
+  unsigned char i;
+  for(i=0;i<3;i++)
+    readLine();
+  String data=readLine();
+  data.trim();
+  flush();
   GSM.println("");
   delay(500);
+  return data;
 }
 
-void httpPost(String url, String parameters)
+String httpPost(String url, String parameters)
 {
   GSM.println("AT+CGATT?");
   watchdogDelay(500);
@@ -275,11 +302,12 @@ void httpPost(String url, String parameters)
  
   GSM.println("AT+HTTPREAD");// read the data from the website you access
   delay(500);
- 
+  
   showSerialData();
- 
+  
   GSM.println("");
   delay(500);
+  
 }
 
 
@@ -296,6 +324,13 @@ void showSerialData()
 void connectPanel()
 {
   digitalWrite(PANEL_EN, HIGH);
+  panelConnected=true;
+}
+
+void disconnectPanel()
+{
+  digitalWrite(PANEL_EN, LOW);
+  panelConnected=false;
 }
 
 void readValues()
