@@ -4954,8 +4954,8 @@
 <text x="16.764" y="4.81" size="0.889" layer="22" ratio="11" rot="MR0">SIM_RST</text>
 <text x="22.61" y="4.81" size="0.889" layer="22" ratio="11" rot="MR0">SIM_VDD</text>
 <text x="11.176" y="28.194" size="0.889" layer="22" ratio="11" rot="MR0">SIM_IO</text>
-<text x="15.25" y="0.5" size="0.889" layer="26" rot="MR0">GND</text>
-<text x="20.25" y="0.5" size="0.889" layer="26" rot="MR0">GND</text>
+<text x="15.25" y="0.5" size="0.889" layer="22" rot="MR0">GND</text>
+<text x="20.25" y="0.5" size="0.889" layer="22" rot="MR0">GND</text>
 </plain>
 <libraries>
 <library name="Discrete">
@@ -5993,47 +5993,47 @@ design rules under a new name.</description>
 </element>
 <element name="MOSI" library="testpad" package="B2,54" value="PTR1B2,54" x="14" y="22" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="15.27" y="18.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="15.27" y="23.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="15.27" y="23.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="15.27" y="20.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="MISO" library="testpad" package="B2,54" value="PTR1B2,54" x="14" y="17" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="15.27" y="13.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="15.27" y="18.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="15.27" y="18.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="15.27" y="15.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="RST" library="testpad" package="B2,54" value="PTR1B2,54" x="14" y="12" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="15.27" y="8.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="15.27" y="13.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="15.27" y="13.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="15.27" y="10.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="SCK" library="testpad" package="B2,54" value="PTR1B2,54" x="9" y="22" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="10.27" y="18.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="10.27" y="23.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="10.27" y="23.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="10.27" y="20.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="VCC" library="testpad" package="B2,54" value="PTR1B2,54" x="9" y="17" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="10.27" y="13.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="10.27" y="18.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="10.27" y="18.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="10.27" y="15.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="GND" library="testpad" package="B2,54" value="PTR1B2,54" x="9" y="12" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="10.27" y="8.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="10.27" y="13.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="10.27" y="13.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="10.27" y="10.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="RX" library="testpad" package="B2,54" value="PTR1B2,54" x="19" y="22" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="20.27" y="18.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="20.27" y="23.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="20.27" y="23.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="20.27" y="20.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="TX" library="testpad" package="B2,54" value="PTR1B2,54" x="19" y="17" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="20.27" y="13.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="20.27" y="18.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="20.27" y="18.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="20.27" y="15.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="LOAD_FET" library="testpad" package="B2,54" value="PTR1B2,54" x="19" y="12" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="20.27" y="8.825" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="22.048" y="13.651" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="22.048" y="13.651" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="20.27" y="10.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="C11" library="Discrete" package="C0805" value="10uF " x="46.237" y="52.6845" smashed="yes">
@@ -6054,12 +6054,12 @@ design rules under a new name.</description>
 </element>
 <element name="BATTERY" library="testpad" package="B2,54" value="PTR1B2,54" x="19" y="26.5" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="20.27" y="23.325" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="21.667" y="28.151" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="21.667" y="28.151" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="20.27" y="25.103" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="PANEL" library="testpad" package="B2,54" value="PTR1B2,54" x="14" y="26.5" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="15.27" y="23.325" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="15.651" y="28.151" size="0.889" layer="26" ratio="11" rot="MR0"/>
+<attribute name="NAME" x="15.651" y="28.151" size="0.889" layer="22" ratio="11" rot="MR0"/>
 <attribute name="VALUE" x="15.27" y="25.103" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="RST1" library="testpad" package="B2,54" value="PTR1B2,54" x="19" y="7.5" smashed="yes" rot="MR0">
@@ -6274,7 +6274,7 @@ design rules under a new name.</description>
 </element>
 <element name="DTR" library="testpad" package="B2,54" value="PTR1B2,54" x="9" y="3" smashed="yes" rot="MR0">
 <attribute name="TP_SIGNAL_NAME" value="" x="10.27" y="-0.175" size="1" layer="38" rot="MR0"/>
-<attribute name="NAME" x="10.27" y="0.401" size="0.889" layer="26" ratio="10" rot="MR0"/>
+<attribute name="NAME" x="10.27" y="0.401" size="0.889" layer="22" ratio="10" rot="MR0"/>
 <attribute name="VALUE" x="10.27" y="1.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
 <element name="GND2" library="testpad" package="B2,54" value="PTR1B2,54" x="14" y="3" smashed="yes" rot="MR0">
