@@ -17,7 +17,12 @@ volatile int countr=0;
 
 ISR(INT0_vect)
 {
-  countr++;
+  ttime=micros();
+  if(wait==0)
+  {
+    ttime=ttime-ltrig;
+  }
+  ltrig=micros();
   wait=0;
 }
 
@@ -50,10 +55,10 @@ void loop()
   }
   */
   if(wait==1)stime=millis();
-  if(((millis()-stime)>30)||(millis()<stime))
+  if(((millis()-stime)>20)||(millis()<stime))
   {
    wait=1;
-   Serial.println(countr, DEC);
+   Serial.println(ttime/74, DEC);
    countr=0; 
   }
 }

@@ -30,16 +30,10 @@ void loop()
 
 void pillowTalk(unsigned char data)
 {
-  for(unsigned char x=0;x<255;x++)
+  clock();
+  for(unsigned char x=0;x<data;x++)
   {
-    if(x<=data)
-    {
-      clock();
-    }
-    else
-    {
-      delayMicroseconds(74);
-    }
+    delayMicroseconds(74);
   }
   clock();
 }
