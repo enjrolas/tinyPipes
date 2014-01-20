@@ -14,21 +14,25 @@ volatile unsigned long ttime=0;
 volatile unsigned long ltrig=0;
 volatile char wait=0;
 volatile int countr=0;
+int x=0;
 
 ISR(INT0_vect)
 {
-  ttime=micros();
   if(wait==0)
   {
-    ttime=ttime-ltrig;
+    ttime=micros()-ltrig;
+    wait=2;
+  }
+  if(wait==1)
+  {
+    wait=0;
   }
   ltrig=micros();
-  wait=0;
 }
 
 void setup()
 {
-  EICRA|=0x02; //INT0 falling edge interrupt
+  EICRA|=0x03; //INT0 falling edge interrupt
   EIMSK|=0x01; //Enable INTO interrupts
   Serial.begin(9600);
   pinMode(rcv, INPUT);
@@ -55,10 +59,24 @@ void loop()
   }
   */
   if(wait==1)stime=millis();
-  if(((millis()-stime)>20)||(millis()<stime))
+  if(((millis()-stime)>60)||(millis()<stime))
   {
    wait=1;
-   Serial.println(ttime/74, DEC);
+   int data=(ttime+100)/200;
+   if(data==1)
+   {
+     x=1;  
+   }
+   if(data==x)
+   {
+     Serial.println(data, DEC);
+   } else {
+     Serial.print(data, DEC);
+     Serial.println(" Nope");
+   }
+   if(x==256)x=0;
+   x++;
+  // Serial.println((ttime+60)/100, DEC); //(ttime+50)/100
    countr=0; 
   }
 }

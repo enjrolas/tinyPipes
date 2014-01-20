@@ -21,11 +21,12 @@ void setup()
 
 void loop()
 {
-  for(unsigned char y=0;y<255;y++)
-  {
-   pillowTalk(y);
-   delay(30);
-  } 
+  pillowTalk((unsigned char)2);
+  delay(50);
+  pillowTalk((unsigned char)22);
+  delay(50);
+  pillowTalk((unsigned char)222);
+  delay(1000);
 }
 
 void pillowTalk(unsigned char data)
@@ -33,7 +34,7 @@ void pillowTalk(unsigned char data)
   clock();
   for(unsigned char x=0;x<data;x++)
   {
-    delayMicroseconds(74);
+    delayMicroseconds(100);
   }
   clock();
 }
