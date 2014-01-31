@@ -6,7 +6,7 @@
 #include "stringHandling.h"
 #include "charging.h"
 
-#define DEBUG 0
+//#define DEBUG 0
 
 #define PANEL_EN 5
 #define PANEL_CURRENT 0

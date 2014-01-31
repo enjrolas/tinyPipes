@@ -105,9 +105,10 @@ void flush()
 
 void loop()
 {
-  if(cycles%5==0)
+  if(cycles%530==0)
   {
-    textSignalStrength("+8613632651167");
+//    textSignalStrength("+8613632651167");
+    textSignalStrength("+639282972119");
     checkSIM();
   }
   watchdogDelay(1000);

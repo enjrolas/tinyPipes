@@ -1,25 +1,25 @@
 EAGLE AutoRouter Statistics:
 
-Job           : /Users/apple/Dropbox/Manila Mantis/TinyPipes/gitRepo/Hardware/tinyTinyPipes/tinyPipes-tinyComponents.job
+Job           : /Users/apple/Dropbox/Manila Mantis/TinyPipes/gitRepo/Hardware/tinyTinyPipes/tinyPipes-tinyComponents.brd
 
-Start at      : 18:18:11 (1/15/14)
-End at        : 18:46:24 (1/15/14)
-Elapsed time  : 00:00:33
+Start at      : 20:44:36 (1/18/14)
+End at        : 20:44:42 (1/18/14)
+Elapsed time  : 00:00:05
 
-Signals       :    67   RoutingGrid: 3.93701 mil  Layers: 2
-Connections   :   225   predefined:  90 ( 0 Vias )
+Signals       :    63   RoutingGrid: 3.93701 mil  Layers: 2
+Connections   :   216   predefined:  215 ( 213 Vias )
 
-Router memory :   1449612
+Router memory :   1456824
 
-Passname          :    Busses     Route Optimize1 Optimize2
+Passname          :     Route Optimize1 Optimize2 Optimize3 Optimize4
 
-Time per pass     :  00:00:00  00:00:15  00:00:08  00:00:10
-Number of Ripups  :         0        18         0         0
-max. Level        :         0         3         0         0
-max. Total        :         0        20         0         0
+Time per pass     :  00:00:00  00:00:02  00:00:01  00:00:01  00:00:01
+Number of Ripups  :         0         0         0         0         0
+max. Level        :         0         0         0         0         0
+max. Total        :         0         0         0         0         0
 
-Routed            :        14       134       135       135
-Vias              :         0       209       125       113
-Resolution        :    46.2 %    99.6 %   100.0 %   100.0 %
+Routed            :         1         1         1         1         1
+Vias              :         0         0         0         0         0
+Resolution        :   100.0 %   100.0 %   100.0 %   100.0 %   100.0 %
 
-Final             : 83.0% finished. Polygons may have fallen apart.
+Final             : 99.5% finished. Polygons may have fallen apart.
