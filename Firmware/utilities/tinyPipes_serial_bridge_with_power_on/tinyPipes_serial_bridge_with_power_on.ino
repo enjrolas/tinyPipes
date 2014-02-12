@@ -11,8 +11,8 @@ String line;
 void setup()
 {
   pinMode(GSM_POWER, OUTPUT);
-  Serial.begin(9600);
-  GSM.begin(9600);
+  Serial.begin(19200);
+  GSM.begin(19200);
   setupWatchdog();
   bootGSMModule();
 }
