@@ -45667,6 +45667,7 @@ design rules under a new name.</description>
 <via x="54.75" y="29.31" extent="1-16" drill="0.3"/>
 <wire x1="54.75" y1="29.31" x2="54.8" y2="29.26" width="0.1" layer="16"/>
 <wire x1="54.8" y1="29.26" x2="55.8" y2="29.26" width="0.1" layer="16"/>
+<contactref element="U$1" pad="P$1"/>
 <contactref element="Q4" pad="2"/>
 <wire x1="55.8" y1="29.26" x2="58.03" y2="29.26" width="0.1" layer="16"/>
 <wire x1="12.8" y1="43" x2="13.2" y2="43" width="0.1524" layer="1"/>
@@ -45677,6 +45678,7 @@ design rules under a new name.</description>
 <wire x1="7.8" y1="52.7" x2="8" y2="52.5" width="0.1524" layer="1"/>
 <wire x1="7.8" y1="53.1" x2="7.8" y2="52.7" width="0.1524" layer="1"/>
 <wire x1="13.2" y1="43" x2="13.2" y2="42.95" width="0.1524" layer="1"/>
+<wire x1="7.8" y1="53.1" x2="7.788" y2="52.89" width="0.1524" layer="1"/>
 <wire x1="55.8" y1="29.9" x2="55.8" y2="29.26" width="0.1524" layer="16"/>
 <wire x1="37.5" y1="48.2" x2="55.8" y2="29.9" width="0.1524" layer="16"/>
 <wire x1="30.7" y1="48.2" x2="37.5" y2="48.2" width="0.1524" layer="16"/>

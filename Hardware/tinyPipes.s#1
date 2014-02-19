@@ -16068,9 +16068,12 @@ www.irf.com&lt;p&gt;
 </net>
 <net name="VCC" class="0">
 <segment>
+<pinref part="U$1" gate="G$1" pin="1"/>
 <pinref part="Q4" gate="G$1" pin="S"/>
+<wire x1="368.3" y1="-80.01" x2="360.68" y2="-80.01" width="0.1524" layer="91"/>
 <wire x1="360.68" y1="-80.01" x2="360.68" y2="-82.55" width="0.1524" layer="91"/>
 <pinref part="P+12" gate="VCC" pin="VCC"/>
+<junction x="360.68" y="-80.01"/>
 </segment>
 </net>
 <net name="B+" class="0">
