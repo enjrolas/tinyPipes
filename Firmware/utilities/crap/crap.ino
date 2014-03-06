@@ -21,11 +21,9 @@ void setup()
 
 void loop()
 {
-    wdt_reset();
-  if(Serial.available()>0)
-    GSM.write(Serial.read());
-  if(GSM.available()>0)
-    Serial.write(GSM.read());    
+  watchdogDelay(1000);
+  String num=getPhoneNumber();
+  Serial<<"phone number is: "<<num<<"\n";
 }
 
 //boots or reboots the GSM module 
@@ -59,6 +57,7 @@ void flushBuffer()
   while(GSM.available()>0)
     Serial.write(GSM.read());
 }
+
 String readLine()
 {
   String line="";
@@ -82,4 +81,28 @@ String readLine()
   line.trim();
   return line;
 }
+
+
+String getPhoneNumber()
+{
+  flushBuffer();
+  //the AT command to return phone number
+  //returns it in this format:
+  //
+  //+CNUM: "","13714281494",129,7,4
+
+  //this function pulls the meat of the number from that line and returns the String
+  //13714281494
+  
+  GSM.println("AT+CNUM");
+  delay(500);
+  readLine();
+  readLine();  //skip the first blank line
+  String line=readLine();
+  unsigned char firstComma=line.indexOf(',');
+  unsigned char secondComma=line.indexOf(',', firstComma+1);
+  line=line.substring(firstComma+2, secondComma-1);  //chop the number out from between the first and second commas, and cut the quotation marks out, while we're at it
+  return line;
+}
+
 

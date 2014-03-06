@@ -5,6 +5,7 @@
 #include "floatToString.h"
 #include "stringHandling.h"
 #include "charging.h"
+#include "blink.h"
 
 //#define DEBUG 0
 
@@ -15,10 +16,8 @@
 #define GSM_POWER 4
 #define CHARGING 8 
 #define ENABLED 9
+#define SIM_STATUS 6
 #define LOAD_EN 8
-//make a couple defs for charging/discharging status
-#define CHARGING 0
-#define DISCHARGING 1 
 
 
 float panelCurrent, panelVoltage, batteryVoltage;
@@ -45,21 +44,13 @@ void setup()
   pinMode(ENABLED, OUTPUT);
   pinMode(LOAD_EN, OUTPUT);
   pinMode(GSM_POWER, OUTPUT);
-  digitalWrite(CHARGING, HIGH);
-  digitalWrite(ENABLED, HIGH);
-  digitalWrite(LOAD_EN, HIGH);
-  digitalWrite(GSM_POWER, HIGH);
-  delay(3000);
-  digitalWrite(GSM_POWER, LOW);
-  digitalWrite(LOAD_EN, LOW);
-  digitalWrite(CHARGING, LOW);
-  digitalWrite(ENABLED, LOW);
+  pinMode(SIM_STATUS, INPUT);
   Serial.println("TinyPipes is booting up...");
-  delay(10000);
   checkSIM();
+  bootGSMModule();
   //sendSMS("+639293143222","entering into the realm of the living");  //alex number
- // sendSMS("+639156568684","entering into the realm of the living");  //hannah number
- // sendSMS("+639209011401","entering into the realm of the living");  //tonito number
+  // sendSMS("+639156568684","entering into the realm of the living");  //hannah number
+  // sendSMS("+639209011401","entering into the realm of the living");  //tonito number
   //sendSMS("+639471782972","entering into the realm of the living");
   wattSeconds=0;
   samples=0;
@@ -69,23 +60,28 @@ void setup()
 //boots or reboots the GSM module 
 void bootGSMModule()
 {
-  GSM.write("AT\r\n");
-  readLine();
-  readLine();
-  String line=readLine();
-  if(line.equals("OK"))  //module is up, turn it off
+  boolean booted=false;
+  while(digitalRead(SIM_STATUS)==0)
   {
-  #ifdef DEBUG  
-      Serial.println("module is on, turning it off");
-  #endif
-    GSM.print("AT+CPOWD=1\r\n");
+#ifdef DEBUG
+    Serial.println("it seems that the module is off.  Booting it");
+#endif
+    digitalWrite(GSM_POWER, HIGH);
+    watchdogDelay(2000);
+    digitalWrite(GSM_POWER, LOW);
+    watchdogDelay(2000);
+    booted=true;
   }
-  watchdogDelay(2000);
-  //turn it on
-  digitalWrite(GSM_POWER, HIGH);
-  watchdogDelay(3000);
-  digitalWrite(GSM_POWER, LOW);
-
+  if(booted)
+  {
+#ifdef DEBUG
+    Serial<<"letting the module finish booting\n";
+#endif
+    watchdogDelay(5000);
+  }
+#ifdef DEBUG
+  Serial.println("GSM module is powered up");
+#endif
 }
 
 void deleteAllMessages()
@@ -93,9 +89,9 @@ void deleteAllMessages()
   unsigned char i;
   for(i=0;i<50;i++)
   {
-  #ifdef DEBUG  
+#ifdef DEBUG  
     Serial<<"deleting ..."<<i<<endl;
-  #endif
+#endif
     deleteMessage(i);
     watchdogDelay(1000);
   }
@@ -118,9 +114,9 @@ String readLine()
   }
   while((a!='\n')&&((millis()-start)<timeout));
   if((millis()-start)>timeout)
-  #ifdef DEBUG  
+#ifdef DEBUG  
     Serial<<"string timed out:"<<line<<endl;
-  #endif
+#endif
   line.trim();
   return line;
 }
@@ -135,9 +131,9 @@ int checkSIM()
   Serial.println(response);
   if((response.indexOf("ERROR")>=0) || (response.indexOf("NOT")>=0) || (response.equals("")))
   {
-    #ifdef DEBUG  
+#ifdef DEBUG  
     Serial.println("looks like there's some problem with the SIM.  Rebooting the cell module");
-    #endif
+#endif
     bootGSMModule();
     return -1;  //some problemo with the SIM-O
   }
@@ -146,7 +142,7 @@ int checkSIM()
 
 }
 
-void flush()
+void flushBuffer()
 {
   while(GSM.available()>0)
     GSM.read();
@@ -154,6 +150,9 @@ void flush()
 
 void readMessage(int index)
 {
+  GSM.print("AT+CMGF=1\r");    //enter text mode for messages
+  watchdogDelay(500);
+  flushBuffer();
   GSM.print("AT+CMGR=");
   GSM.print(index, DEC);
   GSM.print("\r\n");
@@ -187,7 +186,7 @@ void readMessage(int index)
   char temp[160];
   message[1].toCharArray(temp, 160);
   words = split(temp, " ", &len);
-  
+
   Serial.print("length: ");
   Serial.println(len);
 
@@ -197,9 +196,9 @@ void readMessage(int index)
     Serial.println(temp);
     if(strcmp(temp,"text")==0)
     {
-      #ifdef DEBUG
+#ifdef DEBUG
       Serial.println("got a command to send out a text");
-      #endif
+#endif
       String textString="";
       unsigned char i, count;
       for(i=2;i<len;i++)
@@ -207,17 +206,17 @@ void readMessage(int index)
         strcpy(temp, words[i]);
         for(count=0;((count<sizeof(temp))&&(temp[count]!='\n'));count++)
           textString+=temp[count];
-        #ifdef DEBUG  
+#ifdef DEBUG  
         Serial.println("adding a new word to our message content");
         Serial.println(temp);
         Serial.println(sizeof(temp));
-        #endif
+#endif
         if(i<(len-1))
           textString+=" ";
-        #ifdef DEBUG  
+#ifdef DEBUG  
         Serial.print("message so far: ");
         Serial.println(textString);
-        #endif
+#endif
       }
       strcpy(temp, words[1]);
       Serial.println(temp);
@@ -233,9 +232,12 @@ void readMessage(int index)
     if(message[1].equalsIgnoreCase("disconnect"))
       charging=false;
     if(message[1].equalsIgnoreCase("status"))
-    {
-      Serial.println("generating status");
       sendSMS(from, generateStatusMessage());
+    if(message[1].equalsIgnoreCase("test"))
+    {
+      startBlinking();
+      sendSMS(from, generateTestMessage());
+      stopBlinking();
     }
     if(message[1].equalsIgnoreCase("instantaneous"))
       sendSMS(from, instantaneousMeasurement());
@@ -255,15 +257,55 @@ void load(String PIN)
   Serial<<readLine()<<endl;
 }
 
+String generateTestMessage()
+{
+  unsigned char i;
+  String statusString="";
+#ifdef DEBUG  
+  Serial.println("generating status message");
+#endif
+  disconnectPanel();  //disconnect the panel from the battery, so we can get good measurements of panel and battery voltage
+  float disconnectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
+  float disconnectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
+  connectPanel();
+  watchdogDelay(1000);    
+  panelCurrent=analogRead(PANEL_CURRENT)*4.15/1023/100/.003;
+  float connectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
+  float connectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
+  
+  if((disconnectedBatteryVoltage>5)&&(disconnectedPanelVoltage>5)&&(panelCurrent>0))
+    statusString="test passed";
+  else
+    statusString="test failed";
+  char temp[10];
+  statusString+=",";
+  floatToString(temp,disconnectedPanelVoltage,2);
+  statusString+=temp;
+  statusString+=",";
+  floatToString(temp,disconnectedBatteryVoltage,2);
+  statusString+=temp;
+  statusString+=",";
+  floatToString(temp,panelCurrent,2);
+  statusString+=temp;
+  statusString+=",";
+  floatToString(temp,connectedPanelVoltage,2);
+  statusString+=temp;
+  statusString+=",";
+  floatToString(temp,connectedBatteryVoltage,2);
+  statusString+=temp;
+  return statusString;
+
+}
+
 
 String generateStatusMessage()
 {
   unsigned char i;
   String statusString="";
   char temp[10];
-  #ifdef DEBUG  
+#ifdef DEBUG  
   Serial.println("generating status message");
-  #endif
+#endif
   for(i=1;i<=8;i++)
   {
     readSample(data, samplePeriods-i);
@@ -293,16 +335,16 @@ void deleteMessage(int index)
 
 String instantaneousMeasurement()
 {
-  #ifdef DEBUG  
+#ifdef DEBUG  
   Serial.println("taking an instantaneous measurement");
-  #endif
+#endif
   disconnectPanel();  //disconnect the panel from the battery, so we can get good measurements of panel and battery voltage
   watchdogDelay(5000);
   float disconnectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
   float disconnectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
   connectPanel();
   watchdogDelay(5000);    
-  panelCurrent=analogRead(PANEL_CURRENT)*4.15/1023/100/.01;
+  panelCurrent=analogRead(PANEL_CURRENT)*4.15/1023/100/.003;
   float connectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
   float connectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
   String statusString="";
@@ -367,9 +409,9 @@ void loop()
 
 void checkAllMessages()
 {
-  #ifdef DEBUG  
+#ifdef DEBUG  
   Serial.println("checking messages");
-  #endif
+#endif
   GSM.println("AT+CMGL=\"ALL\"\r\n");
   watchdogDelay(5000);
   while(GSM.available()>0)
@@ -413,7 +455,7 @@ void readValues()
   int i;
   for(i=0;i<SAMPLES;i++)
   {
-    panelCurrent+=analogRead(PANEL_CURRENT)*4.15/1023/50/.01;
+    panelCurrent+=analogRead(PANEL_CURRENT)*4.15/1023/50/.003;
     panelVoltage+=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
     batteryVoltage+=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
   }
@@ -451,7 +493,7 @@ void saveValues()
 
 void printValues()
 {
-  #ifdef DEBUG  
+#ifdef DEBUG  
   Serial<<"sample "<<samples<<" ";
   Serial<<"Status: ";
   if(charging)
@@ -463,7 +505,7 @@ void printValues()
   int minutes=cycleTime/60;
   int seconds=cycleTime%60;
   Serial<<"Panel Current: "<<panelCurrent<<" Panel Voltage: "<<panelVoltage<<" panel PWM:  "<<panelPWM<<" Battery Voltage: "<<batteryVoltage<<" cycle time:  "<<minutes<<":"<<seconds<<"\n";
-  #endif
+#endif
 }
 
 void connectLoad()
@@ -479,9 +521,11 @@ void disconnectLoad()
 void connectPanel()
 {
   digitalWrite(PANEL_EN, HIGH);
+  digitalWrite(CHARGING, HIGH);
 }
 
 void chargeBattery(){
+  digitalWrite(CHARGING, HIGH);
   Serial.println(batteryVoltage);
   Serial.println(panelCurrent);
   if(chargeMode==CONSTANT_VOLTAGE)
@@ -490,39 +534,39 @@ void chargeBattery(){
       increment=1;
     else
       increment=0.2;
-  #ifdef DEBUG  
+#ifdef DEBUG  
     Serial.println("constant voltage charging");
-    #endif
+#endif
     if(batteryVoltage<(FLOAT_VOLTAGE-VOLTAGE_HYSTERESIS))
       panelPWM+=increment;
     else if(batteryVoltage>(FLOAT_VOLTAGE+VOLTAGE_HYSTERESIS))
       panelPWM-=increment;
 
-  CV_cycles++;
-  if(CV_cycles>30)
-  {
-  if(panelPWM<30)  //low panelPWM indicates that we have a high panel voltage and a low current
+    CV_cycles++;
+    if(CV_cycles>30)
     {
-      if(CV_cycles%300==0)  //check every five minutes to see if we really should be in CV mode
-      {  //if we're at low PWM and high voltage (>13V), we're in the right place, and we're topping off the battery
-         //low PWM and low voltage is a no-no.  We should be back to CC mode.
-      disconnectPanel();
-      watchdogDelay(10000);  //wait ten seconds for the battery voltage to settle
-      readValues();
-      if(batteryVoltage<13)
+      if(panelPWM<30)  //low panelPWM indicates that we have a high panel voltage and a low current
       {
+        if(CV_cycles%300==0)  //check every five minutes to see if we really should be in CV mode
+        {  //if we're at low PWM and high voltage (>13V), we're in the right place, and we're topping off the battery
+          //low PWM and low voltage is a no-no.  We should be back to CC mode.
+          disconnectPanel();
+          watchdogDelay(10000);  //wait ten seconds for the battery voltage to settle
+          readValues();
+          if(batteryVoltage<13)
+          {
+            CC_cycles=0;
+            chargeMode=CONSTANT_CURRENT;
+          }
+        }
+      }
+      if(panelPWM>100)  //if we're opening it up full throttle to charge, we should be in CC mode
+      {
+        panelPWM=85;
         CC_cycles=0;
         chargeMode=CONSTANT_CURRENT;
       }
-      }
     }
-    if(panelPWM>100)  //if we're opening it up full throttle to charge, we should be in CC mode
-    {
-      panelPWM=85;
-      CC_cycles=0;
-      chargeMode=CONSTANT_CURRENT;
-    }
-  }
     if(panelPWM>255)
       panelPWM=255;
     if(panelPWM<0)
@@ -532,9 +576,9 @@ void chargeBattery(){
 
   else if(chargeMode==CONSTANT_CURRENT)
   {
-  #ifdef DEBUG  
+#ifdef DEBUG  
     Serial.println("constant current charging");
-    #endif
+#endif
     digitalWrite(PANEL_EN, HIGH);
     unsigned char i;
     CC_cycles++;
@@ -546,11 +590,11 @@ void chargeBattery(){
         Serial.print(" ");
         Serial.println(voltagePoints[i+1]);
         if(CC_cycles>10)
-        if(batteryVoltage>voltagePoints[i+1])  //our voltage is too high for this current.  Switch to constant voltage mode
-        {
-          chargeMode=CONSTANT_VOLTAGE;
-          CV_cycles=0;          
-        }
+          if(batteryVoltage>voltagePoints[i+1])  //our voltage is too high for this current.  Switch to constant voltage mode
+          {
+            chargeMode=CONSTANT_VOLTAGE;
+            CV_cycles=0;          
+          }
       }
     }
   }
@@ -558,9 +602,9 @@ void chargeBattery(){
 
   if(panelVoltage<batteryVoltage)  //the panel voltage is lower than the battery voltage.  Might as well disconnect the battery
   {
-  #ifdef DEBUG  
+#ifdef DEBUG  
     Serial.println("guess it's nighttime.  Disconnecting the panel");
-  #endif
+#endif
     disconnectPanel();
   }
 }
@@ -569,7 +613,9 @@ void chargeBattery(){
 void disconnectPanel()
 {
   digitalWrite(PANEL_EN, LOW);
+  digitalWrite(CHARGING, LOW);
 }
+
 
 
 
