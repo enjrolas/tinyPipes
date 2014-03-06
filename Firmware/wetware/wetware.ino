@@ -46,8 +46,8 @@ void setup()
   pinMode(GSM_POWER, OUTPUT);
   pinMode(SIM_STATUS, INPUT);
   Serial.println("TinyPipes is booting up...");
-  checkSIM();
   bootGSMModule();
+  checkSIM();
   //sendSMS("+639293143222","entering into the realm of the living");  //alex number
   // sendSMS("+639156568684","entering into the realm of the living");  //hannah number
   // sendSMS("+639209011401","entering into the realm of the living");  //tonito number
@@ -77,7 +77,8 @@ void bootGSMModule()
 #ifdef DEBUG
     Serial<<"letting the module finish booting\n";
 #endif
-    watchdogDelay(5000);
+    watchdogDelay(7000);
+    flushBuffer();
   }
 #ifdef DEBUG
   Serial.println("GSM module is powered up");
@@ -138,8 +139,10 @@ int checkSIM()
     return -1;  //some problemo with the SIM-O
   }
   else
+  {
+    digitalWrite(ENABLED, HIGH);  //turn on the ENABLED LED to indicate that the SIM module is now ready for business
     return 0;  //all's well
-
+  }
 }
 
 void flushBuffer()
