@@ -2,23 +2,23 @@
 
 #include <Streaming.h>
 #include <SoftwareSerial.h>
+SoftwareSerial GSM(3,2);
+
 #include "delay.h"
-#include "string.h"
+#include "EEPROM_functions.h"
+#include "stringHandling.h"
 #include<stdlib.h>
 
 //#define DEBUG 1
 #define GSM_POWER 4
 #define PANEL_EN 5
 #define SIM_STATUS 6
-#define POST_STRING_ADDRESS 1
-#define MESSAGE_INDEX 0
 
 boolean tcpSetup=false;
 boolean httpSetup=false;
 boolean panelConnected=false;
 
 int cycles=0;
-SoftwareSerial GSM(3,2);
 
 void setup()
 {
@@ -76,8 +76,8 @@ String readLine()
     }
   }
   while((a!='\n')&&((millis()-start)<timeout));
-  if((millis()-start)>timeout)
 #ifdef DEBUG  
+  if((millis()-start)>timeout)
     Serial<<"string timed out:"<<line<<endl;
 #endif
   line.trim();
@@ -147,22 +147,26 @@ void getSpray()
 {
   String url="http://valve.tinypipes.net/getSpray/"+getPhoneNumber()+"/";
   Serial.println(url);
-  String data=submitHttpRequest(url);
-  if(!data.equals("None"))  // only do this if there is a spray to send out
+  submitHttpRequest(url);
+  char data[150];
+  getEEPROMdata(data, sizeof(data));
+  trim(data, strlen(data));
+  Serial<<data<<endl;
+  if(strcmp(data, "None")!=0)  // only do this if there is a spray to send out
   {
     //parse out the number and content
-    unsigned char commaIndex=data.indexOf(',');
-    char to[100];
-    data.substring(data.indexOf(':')+1, commaIndex);
-    String content=data.substring(data.indexOf(':', commaIndex)+1);
+    unsigned char commaIndex=getIndex(data, ',');
+    char to[22];
+    substring(data, to, getIndex(data, ':'), commaIndex);
+    substring(data, data, getIndex(data, ':', commaIndex)+1, strlen(data));
     Serial<<"to:  "<<to<<"\n";
-    Serial<<"content:  "<<content<<"\n";
+    Serial<<"content:  "<<data<<"\n";
     //send the SMS
-    sendSMS(to, content);  
+    sendSMS(to, data);  
   }
 }
 
-void sendSMS(String number, String message)
+void sendSMS(char* number, char* message)
 {
 
   GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
@@ -214,7 +218,7 @@ void setupHttp()
 
 ///this function is submit a http GET request
 ///attention:the time of delay is very important, it must be set enough 
-String submitHttpRequest(String url)
+int submitHttpRequest(String url)
 {
   if(!httpSetup)
   {
@@ -240,64 +244,14 @@ String submitHttpRequest(String url)
   unsigned char i;
   for(i=0;i<3;i++)
     Serial<<"Line "<<i<<" :  "<<readLine()<<"\n";
-  String data=readLine();
-  data.trim();
-  Serial<<"your data:  "<<data<<"\n";
+  int dataLength=saveModuleOutput();  
+  Serial<<dataLength<<endl;
   flushBuffer();
   GSM.println("");
   delay(500);
-  return data;
+  return dataLength;
 }
 
-String httpPost(String url, String parameters)
-{
-  GSM.println("AT+CGATT?");
-  watchdogDelay(500);
-
-  showSerialData();
-
-  GSM.println("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");//setting the SAPBR, the connection type is using gprs
-  watchdogDelay(1000);
-
-  showSerialData();
-
-  GSM.println("AT+SAPBR=3,1,\"APN\",\"CMNET\"");//setting the APN, the second need you fill in your local apn server
-  watchdogDelay(4000);
-
-  showSerialData();
-
-  GSM.println("AT+SAPBR=1,1");//setting the SAPBR, for detail you can refer to the AT command mamual
-  watchdogDelay(2000);
-
-  showSerialData();
-
-  GSM.println("AT+HTTPINIT"); //init the HTTP request
-
-  watchdogDelay(2000); 
-  showSerialData();
-
-  GSM.print("AT+HTTPPARA=\"URL\",\"");
-  GSM.print(url);
-  GSM.println("\"");// setting the httppara, the second parameter is the website you want to access
-  watchdogDelay(1000);
-
-  showSerialData();
-
-  GSM.println("AT+HTTPACTION=0");//submit the request 
-  watchdogDelay(10000);//the delay is very important, the delay time is base on the return from the website, if the return datas are very large, the time required longer.
-  //while(!GSM.available());
-
-  showSerialData();
-
-  GSM.println("AT+HTTPREAD");// read the data from the website you access
-  delay(500);
-
-  showSerialData();
-
-  GSM.println("");
-  delay(500);
-
-}
 
 void setupTcp()
 {
@@ -383,89 +337,6 @@ uint16_t getLength(char * buffer)
   return pointer;
 }
 
-uint16_t horribleReadline(char *buffer, uint16_t limit)
-{
-  char a;
-  uint16_t pointer=0;
-  while(true)
-  {
-    if(GSM.available()>0){
-      a=GSM.read();
-      if(a==10) //check for a carriage return
-      {
-        *(buffer + pointer)=0;  //end the line
-        return pointer;
-      }
-      else if(pointer<limit-1)
-      {
-        *(buffer + pointer) = a;
-        pointer++;
-      }
-      else
-      {
-        return pointer;  //we hit the limit, we gotta call it
-      }
-    }
-  }
-}
-
-void removeChar(char * buffer, char target)
-{
-  uint16_t pointer, runner, deleted;
-  uint16_t limit=getLength(buffer);
-  deleted=0;
-  for(pointer=0;pointer<limit;pointer++)
-  {   
-    if(*(buffer+pointer+deleted)==target)
-      deleted++;
-    if((pointer+deleted)>limit)
-    {
-      *(buffer+pointer)=0;
-      break;
-    }
-    else
-      *(buffer+pointer)=*(buffer+pointer+deleted);
-  }  
-}
-
-void sendEEPROMdata()
-{
-  uint16_t address=POST_STRING_ADDRESS;
-  char data;
-  Serial.println("sending EEPROM string");
-  do{
-    data=EEPROM.read(address);
-    GSM.print(data);
-    Serial.print(data);
-    address++;
-  }
-  while(data!=0);
-  GSM.println();
-}
-
-void printEEPROMdata()
-{
-  uint16_t address=POST_STRING_ADDRESS;
-  char data;
-  do{
-    data=EEPROM.read(address);
-    Serial.print(data);
-    address++;
-  }
-  while(data!=0);
-}
-
-uint16_t saveString(char * buffer, uint16_t address)
-{
-  uint16_t pointer=0;
-  while(*(buffer+pointer)!=0)
-  {
-    EEPROM.write(address+pointer, *(buffer+pointer));
-    pointer++;
-  }
-  EEPROM.write(address+pointer, 0); //null terminate that string!
-  return address+pointer;
-}
 
 
 //puts together the parameter string for a POST request and saves it to EEPROM (it was too unweildly to pass around as a parameter)
@@ -500,7 +371,7 @@ uint16_t constructPostString(int index)
     for(unsigned char a=0;a<sizeof(temp);a++)
       temp[a]=0;
     char scratch[22];
-    uint16_t address=POST_STRING_ADDRESS;
+    uint16_t address=STRING_ADDRESS;
     address=saveString("Body=", address);
     before=address;
     horribleReadline(temp+getLength(temp),160);
@@ -556,30 +427,6 @@ void postMessage(unsigned char index)
 }
 
 
-uint16_t getIndex(char * buffer, char target)
-{
-  uint16_t pointer=0;
-  while((*(buffer+pointer)!=target)&&(*(buffer+pointer)!=0))    //note -- this is vulnerable to any strings that aren't null-terminated
-    pointer++;
-  return pointer;
-}
-
-
-uint16_t getIndex(char * buffer, uint16_t start, char target)
-{
-  uint16_t pointer=start;
-  while((*(buffer+pointer)!=target)&&(*(buffer+pointer)!=0))    //note -- this is vulnerable to any strings that aren't null-terminated
-    pointer++;
-  return pointer;
-}
-
-void substring(char* source, char * destination, uint16_t from, uint16_t to)
-{
-  uint16_t pointer;
-  for(pointer=from;pointer<to;pointer++)
-    *(destination+pointer-from)=*(source + pointer);
-  *(destination + pointer - from) =0;  //null-terminate the string
-}
 
 void checkMessages()
 {
@@ -615,8 +462,7 @@ void showSerialData()
   while(GSM.available()>0)
   {
     Serial.write(GSM.read());
-    watchdogDelay(1);
-
+    wdt_reset();
   }
 }
 
@@ -637,9 +483,9 @@ int8_t sendATCommand(char* ATcommand, char* expected_answer1, unsigned int timeo
   GSM.println(ATcommand);    // Send the AT command 
 
 
-    x = 0;
+  x = 0;
   previous = millis();
-  Serial<<"command: "<<ATcommand<<"\n";
+  Serial<<ATcommand<<endl;
   // this loop waits for the answer
   do{
     wdt_reset();
@@ -656,7 +502,7 @@ int8_t sendATCommand(char* ATcommand, char* expected_answer1, unsigned int timeo
   }
   while((answer == 0) && ((millis() - previous) < timeout));    
 
-  Serial<<"response: "<<response<<"\n";
+  Serial<<response<<endl;
   return answer;
 }
 
@@ -665,7 +511,7 @@ void loop()
   if(cycles%10==0)
   {
     checkSIM();
-    //    getSpray();
+    getSpray();
     checkMessages();
 
   }
