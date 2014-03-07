@@ -1,5 +1,6 @@
 boolean blink =false; 
-#define BLINK_PIN 8 
+#define CHARGING 8 
+#define ENABLED 9
 
 void startBlinking()
 {
@@ -24,11 +25,11 @@ sei();//allow interrupts
 void stopBlinking()
 {
   TIMSK1 &= (0xFF ^ (1 << OCIE1A));  
-  digitalWrite(BLINK_PIN, LOW);
+  digitalWrite(ENABLED, LOW);
 }
 
 ISR(TIMER1_COMPA_vect){//timer1 interrupt 1Hz toggles pin 13 (LED)
   blink=!blink;
-  digitalWrite(BLINK_PIN, blink);
+  digitalWrite(ENABLED, blink);
 }
   

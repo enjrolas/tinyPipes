@@ -9,21 +9,21 @@
 <grid distance="0.041" unitdist="mm" unit="mm" style="lines" multiple="5" display="yes" altdistance="0.05" altunitdist="mm" altunit="mm"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
 <layer number="20" name="Dimension" color="5" fill="1" visible="yes" active="yes"/>
 <layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="22" name="bPlace" color="3" fill="1" visible="no" active="yes"/>
+<layer number="22" name="bPlace" color="3" fill="1" visible="yes" active="yes"/>
 <layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
-<layer number="24" name="bOrigins" color="3" fill="1" visible="no" active="yes"/>
+<layer number="24" name="bOrigins" color="3" fill="1" visible="yes" active="yes"/>
 <layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="26" name="bNames" color="3" fill="1" visible="no" active="yes"/>
+<layer number="26" name="bNames" color="3" fill="1" visible="yes" active="yes"/>
 <layer number="27" name="tValues" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="28" name="bValues" color="7" fill="1" visible="yes" active="yes"/>
-<layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
-<layer number="30" name="bStop" color="3" fill="6" visible="no" active="yes"/>
+<layer number="29" name="tStop" color="7" fill="3" visible="yes" active="yes"/>
+<layer number="30" name="bStop" color="3" fill="6" visible="yes" active="yes"/>
 <layer number="31" name="tCream" color="7" fill="4" visible="no" active="yes"/>
 <layer number="32" name="bCream" color="3" fill="5" visible="no" active="yes"/>
 <layer number="33" name="tFinish" color="6" fill="3" visible="no" active="yes"/>
@@ -2927,6 +2927,7 @@
 <wire x1="52.959" y1="16.383" x2="50.8" y2="16.383" width="0.2032" layer="41"/>
 <wire x1="50.8" y1="16.383" x2="50.8" y2="17.145" width="0.2032" layer="41"/>
 <rectangle x1="52.705" y1="40.767" x2="54.61" y2="44.577" layer="41"/>
+<text x="31.5" y="1.5" size="1.016" layer="21" font="vector">v2.7 february 2014</text>
 <rectangle x1="12.4025" y1="0.1435" x2="15.2315" y2="0.1845" layer="22"/>
 <rectangle x1="20.1925" y1="0.1435" x2="20.3565" y2="0.1845" layer="22"/>
 <rectangle x1="21.1355" y1="0.1435" x2="24.3745" y2="0.1845" layer="22"/>
@@ -24335,7 +24336,6 @@
 <rectangle x1="47.4575" y1="54.2635" x2="48.9745" y2="54.3045" layer="22"/>
 <rectangle x1="47.6215" y1="54.3045" x2="48.9745" y2="54.3455" layer="22"/>
 <rectangle x1="47.9085" y1="54.3455" x2="48.5235" y2="54.3865" layer="22"/>
-<text x="30.914" y="1.353" size="1.27" layer="21" font="vector">v2.8 march 2014</text>
 </plain>
 <libraries>
 <library name="Discrete">
@@ -25277,15 +25277,15 @@ design rules under a new name.</description>
 </element>
 <element name="R5" library="Discrete" package="R0603" value="10k,1%" x="56.08" y="48.483" smashed="yes">
 <attribute name="NAME" x="58.7" y="47.78" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="54.757" y="48.0885" size="0.4064" layer="27" ratio="10"/>
+<attribute name="VALUE" x="54.429" y="47.0225" size="0.635" layer="27" ratio="10"/>
 </element>
 <element name="R6" library="Discrete" package="R0603" value="24k,1%" x="56.06" y="46.93" smashed="yes">
 <attribute name="NAME" x="58.688" y="46.222" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="55.147" y="46.7405" size="0.4064" layer="27" ratio="10"/>
+<attribute name="VALUE" x="54.409" y="45.4695" size="0.635" layer="27" ratio="10"/>
 </element>
 <element name="C3" library="Discrete" package="AVX-D" value="470uF 6.3V" x="53.3895" y="36.953" smashed="yes" rot="R180">
 <attribute name="NAME" x="48.129" y="36.2725" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="56.0215" y="36.955" size="0.6096" layer="27" ratio="10" rot="R180"/>
+<attribute name="VALUE" x="53.6435" y="34.413" size="0.6096" layer="27" ratio="10" rot="R180"/>
 </element>
 <element name="C4" library="Discrete" package="C0805" value="10uF " x="57.032" y="32.737" smashed="yes" rot="R90">
 <attribute name="NAME" x="52.751" y="32.3355" size="0.889" layer="25" font="vector" ratio="11" rot="R90"/>
@@ -25323,11 +25323,11 @@ design rules under a new name.</description>
 <attribute name="NAME" x="12.468" y="38.964" size="0.889" layer="25" ratio="11" rot="R90"/>
 </element>
 <element name="AVRISP" library="SparkFun" package="2X3_LOCK" value="DNP" x="6.946" y="36.328" smashed="yes" rot="R90">
-<attribute name="NAME" x="2.7" y="36.664" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="NAME" x="10.039" y="36.869" size="0.889" layer="25" ratio="11" rot="R90"/>
 </element>
 <element name="R2" library="Discrete" package="R0603" value="100k" x="22.475" y="43.638" smashed="yes" rot="R180">
 <attribute name="NAME" x="25.015" y="43.087" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="23.118" y="43.803" size="0.4064" layer="27" rot="R180"/>
+<attribute name="VALUE" x="23.61" y="45.443" size="0.4064" layer="27" rot="R180"/>
 </element>
 <element name="R3" library="Discrete" package="R0603" value="10k" x="5.831" y="44.43" smashed="yes">
 <attribute name="NAME" x="4.815" y="42.8425" size="0.8128" layer="25" ratio="11"/>
@@ -25339,7 +25339,7 @@ design rules under a new name.</description>
 </element>
 <element name="R10" library="Discrete" package="R0603" value="100k" x="39.185" y="36.4415" smashed="yes" rot="R270">
 <attribute name="NAME" x="33.713" y="34.9325" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="38.92" y="37.1175" size="0.4064" layer="27" rot="R270"/>
+<attribute name="VALUE" x="37.772" y="37.0765" size="0.6096" layer="27" rot="R270"/>
 </element>
 <element name="RSENSE" library="Discrete" package="R2512" value="0.003R,1%" x="34.373" y="43.513" smashed="yes" rot="R270">
 <attribute name="NAME" x="32.067" y="40.58" size="0.889" layer="25" ratio="11" rot="R90"/>
@@ -25347,19 +25347,19 @@ design rules under a new name.</description>
 </element>
 <element name="R24" library="Discrete" package="R0603" value="39k,1%" x="24.788" y="38.973" smashed="yes">
 <attribute name="NAME" x="26.4105" y="38.638" size="0.889" layer="25" ratio="11"/>
-<attribute name="VALUE" x="23.587" y="38.65" size="0.4064" layer="27"/>
+<attribute name="VALUE" x="24.407" y="37.83" size="0.6096" layer="27"/>
 </element>
 <element name="R25" library="Discrete" package="R0603" value="10k,1%" x="24.7545" y="42.0395" smashed="yes" rot="R180">
 <attribute name="NAME" x="26.4265" y="41.5265" size="0.889" layer="25" ratio="11"/>
-<attribute name="VALUE" x="25.7175" y="42.2065" size="0.4064" layer="27" rot="R180"/>
+<attribute name="VALUE" x="25.3895" y="43.4365" size="0.6096" layer="27" rot="R180"/>
 </element>
 <element name="R26" library="Discrete" package="R0603" value="39k,1%" x="24.779" y="34.4145" smashed="yes">
 <attribute name="NAME" x="26.384" y="34.3875" size="0.889" layer="25" ratio="11"/>
-<attribute name="VALUE" x="23.856" y="34.2065" size="0.4064" layer="27"/>
+<attribute name="VALUE" x="25.414" y="33.0175" size="0.6096" layer="27"/>
 </element>
 <element name="R27" library="Discrete" package="R0603" value="10k,1%" x="24.779" y="35.9235" smashed="yes" rot="R180">
 <attribute name="NAME" x="26.402" y="35.7045" size="0.889" layer="25" ratio="11"/>
-<attribute name="VALUE" x="25.765" y="36.1085" size="0.4064" layer="27" rot="R180"/>
+<attribute name="VALUE" x="26.462" y="35.2885" size="0.6096" layer="27" rot="R180"/>
 </element>
 <element name="BATTERY+" library="tinyPipes_v2.5" package="TINYPIPES_BATT" value="TINYPIPES_BATTBATT" x="30.01" y="56.228" locked="yes" smashed="yes" rot="R180"/>
 <element name="BATTERY-" library="tinyPipes_v2.5" package="TINYPIPES_BATT" value="TINYPIPES_BATTBATT" x="18.498" y="56.228" locked="yes" smashed="yes" rot="R180"/>
@@ -25372,16 +25372,16 @@ design rules under a new name.</description>
 <attribute name="NAME" x="38.229" y="41.438" size="0.889" layer="25" ratio="11" rot="R90"/>
 </element>
 <element name="R8" library="Discrete" package="R0603" value="10k" x="13.508" y="51" smashed="yes" rot="R180">
-<attribute name="NAME" x="15.199" y="51.006" size="0.6096" layer="25" ratio="11"/>
-<attribute name="VALUE" x="13.27" y="50.816" size="0.4064" layer="27"/>
+<attribute name="NAME" x="12.011" y="50.5" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="VALUE" x="14.651" y="51.889" size="0.4064" layer="27" rot="R180"/>
 </element>
 <element name="R28" library="Discrete" package="R0603" value="10k" x="13.508" y="49" smashed="yes" rot="R180">
-<attribute name="NAME" x="14.914" y="48.6595" size="0.6096" layer="25" ratio="11"/>
-<attribute name="VALUE" x="13.229" y="48.798" size="0.4064" layer="27"/>
+<attribute name="NAME" x="11.9795" y="47.96" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="VALUE" x="14.651" y="49.889" size="0.4064" layer="27" rot="R180"/>
 </element>
 <element name="D2" library="diode" package="SMB" value="SS54" x="45.742" y="55.886" smashed="yes" rot="R180">
 <attribute name="NAME" x="42.043" y="55.223" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="45.343" y="56.175" size="0.8128" layer="27" rot="R180"/>
+<attribute name="VALUE" x="47.557" y="58.799" size="0.8128" layer="27" rot="R180"/>
 </element>
 <element name="R13" library="Discrete" package="R0603" value="100k" x="2.6535" y="47.428" smashed="yes" rot="R180">
 <attribute name="NAME" x="1.073" y="46.8765" size="0.889" layer="25" ratio="11" rot="R90"/>
@@ -25392,24 +25392,24 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="5.201" y="46.793" size="0.4064" layer="27" rot="R180"/>
 </element>
 <element name="R15" library="Discrete" package="R0603" value="10k" x="13.508" y="57" smashed="yes">
-<attribute name="NAME" x="15.172" y="56.75" size="0.6096" layer="25" ratio="11"/>
-<attribute name="VALUE" x="13.118" y="56.856" size="0.4064" layer="27"/>
+<attribute name="NAME" x="16.025" y="55.926" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="VALUE" x="14.143" y="57.635" size="0.4064" layer="27"/>
 </element>
 <element name="R16" library="Discrete" package="R0603" value="10k" x="13.508" y="55" smashed="yes">
-<attribute name="NAME" x="15.153" y="55.188" size="0.6096" layer="25" ratio="11"/>
-<attribute name="VALUE" x="13.159" y="54.774" size="0.4064" layer="27"/>
+<attribute name="NAME" x="11.929" y="54.021" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="VALUE" x="14.143" y="55.635" size="0.4064" layer="27"/>
 </element>
 <element name="R1" library="Discrete" package="R0603" value="10k" x="13.508" y="53" smashed="yes" rot="R180">
-<attribute name="NAME" x="15.218" y="53.047" size="0.6096" layer="25" ratio="11"/>
-<attribute name="VALUE" x="13.188" y="52.867" size="0.4064" layer="27"/>
+<attribute name="NAME" x="11.979" y="52.405" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="VALUE" x="14.651" y="54.143" size="0.4064" layer="27" rot="R180"/>
 </element>
 <element name="U4" library="tinyPipes" package="SOT23-5" value="MAX4372" x="25.5855" y="31.801" smashed="yes" rot="R270">
 <attribute name="NAME" x="28.7705" y="30.937" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="29.0115" y="32.681" size="0.4064" layer="27" rot="R270"/>
+<attribute name="VALUE" x="22.4105" y="33.706" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="D4" library="diode" package="SMB" value="SS54" x="36.3" y="55.88" smashed="yes" rot="R180">
 <attribute name="NAME" x="40.951" y="55.21" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="35.833" y="56.249" size="0.8128" layer="27" rot="R180"/>
+<attribute name="VALUE" x="38.416" y="58.75" size="0.8128" layer="27" rot="R180"/>
 </element>
 <element name="MOSI" library="heart" package="HEART" value="HEARTPAD" x="14" y="22" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="15.27" y="20.603" size="0.0254" layer="28" rot="MR0"/>
@@ -25473,8 +25473,8 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="1.397" y="49.403" size="0.8128" layer="27" ratio="10"/>
 </element>
 <element name="Q7" library="Discrete" package="SOT23" value="S9013" x="22.479" y="46.101" smashed="yes">
-<attribute name="NAME" x="25.388" y="45.946" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="21.783" y="45.876" size="0.4064" layer="27" ratio="10"/>
+<attribute name="NAME" x="25.019" y="45.085" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="VALUE" x="21.209" y="45.466" size="0.8128" layer="27" ratio="10"/>
 </element>
 <element name="R12" library="Discrete" package="R0603" value="1k" x="19.939" y="44.45" smashed="yes" rot="R270">
 <attribute name="NAME" x="18.6055" y="45.974" size="0.889" layer="25" ratio="11"/>
@@ -25504,19 +25504,19 @@ design rules under a new name.</description>
 </element>
 <element name="C15" library="Discrete" package="AVX-A" value="16V 10uF" x="24.511" y="18.034" smashed="yes" rot="R90">
 <attribute name="NAME" x="23.536" y="16.942" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="24.707" y="16.902" size="0.4064" layer="27" rot="R90"/>
+<attribute name="VALUE" x="26.511" y="15.672" size="1.016" layer="27" rot="R90"/>
 </element>
 <element name="C2" library="Discrete" package="AVX-A" value="16V 10uF" x="9.779" y="34.163" smashed="yes" rot="R90">
 <attribute name="NAME" x="8.7405" y="32.3725" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="9.893" y="32.949" size="0.4064" layer="27" rot="R90"/>
+<attribute name="VALUE" x="11.779" y="31.801" size="1.016" layer="27" rot="R90"/>
 </element>
 <element name="C1" library="Discrete" package="C0603" value="22pF" x="13.462" y="43.561" smashed="yes">
-<attribute name="NAME" x="13.684" y="42.402" size="0.4064" layer="25" ratio="11"/>
-<attribute name="VALUE" x="12.192" y="42.4275" size="0.381" layer="27" ratio="12"/>
+<attribute name="NAME" x="12.7" y="41.91" size="0.889" layer="25" ratio="11"/>
+<attribute name="VALUE" x="12.192" y="43.3705" size="0.381" layer="27" ratio="12"/>
 <attribute name="NAME" x="12.192" y="43.307" size="0.635" layer="33" ratio="10"/>
 </element>
 <element name="C16" library="Discrete" package="C0603" value="22pF" x="10.414" y="43.561" smashed="yes" rot="R180">
-<attribute name="NAME" x="11.811" y="42.799" size="0.4064" layer="25" ratio="11" rot="R180"/>
+<attribute name="NAME" x="11.811" y="42.799" size="0.889" layer="25" ratio="11" rot="R180"/>
 <attribute name="VALUE" x="11.684" y="43.7515" size="0.381" layer="27" ratio="12" rot="R180"/>
 <attribute name="NAME" x="11.684" y="43.815" size="0.635" layer="33" ratio="10" rot="R180"/>
 </element>
@@ -25559,7 +25559,7 @@ design rules under a new name.</description>
 <attribute name="NAME" x="11.303" y="35.179" size="0.635" layer="33" ratio="10" rot="R270"/>
 </element>
 <element name="C17" library="Discrete" package="C0603" value="100nF" x="16.637" y="44.45" smashed="yes" rot="R270">
-<attribute name="NAME" x="15.875" y="43.053" size="0.4064" layer="25" ratio="11" rot="R90"/>
+<attribute name="NAME" x="15.875" y="43.053" size="0.889" layer="25" ratio="11" rot="R90"/>
 <attribute name="VALUE" x="16.4465" y="45.72" size="0.381" layer="27" ratio="12" rot="R270"/>
 <attribute name="NAME" x="16.383" y="45.72" size="0.635" layer="33" ratio="10" rot="R270"/>
 </element>
@@ -25600,10 +25600,7 @@ design rules under a new name.</description>
 <element name="GND2" library="heart" package="HEART" value="HEARTPAD" x="19" y="3" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="20.27" y="1.603" size="0.0254" layer="28" rot="MR0"/>
 </element>
-<element name="R23" library="Discrete" package="R0603" value="10k" x="25.098" y="25.75" smashed="yes" rot="R180">
-<attribute name="NAME" x="28.258" y="25.603" size="0.635" layer="25" ratio="10" rot="R180"/>
-<attribute name="VALUE" x="26.114" y="25.9405" size="0.4064" layer="27" ratio="10" rot="R180"/>
-</element>
+<element name="R23" library="Discrete" package="R0603" value="10k" x="25.098" y="25.75" rot="R180"/>
 <element name="C23" library="Discrete" package="C0805" value="100nF" x="25.028" y="23.938" rot="R180"/>
 </elements>
 <signals>

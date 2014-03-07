@@ -46,12 +46,9 @@ void setup()
   pinMode(GSM_POWER, OUTPUT);
   pinMode(SIM_STATUS, INPUT);
   Serial.println("TinyPipes is booting up...");
+  startBlinking();  //flash the ENABLED LED until the GSM module is ready to receive messages
   bootGSMModule();
   checkSIM();
-  //sendSMS("+639293143222","entering into the realm of the living");  //alex number
-  // sendSMS("+639156568684","entering into the realm of the living");  //hannah number
-  // sendSMS("+639209011401","entering into the realm of the living");  //tonito number
-  //sendSMS("+639471782972","entering into the realm of the living");
   wattSeconds=0;
   samples=0;
   setupWatchdog();
@@ -140,6 +137,7 @@ int checkSIM()
   }
   else
   {
+    stopBlinking();
     digitalWrite(ENABLED, HIGH);  //turn on the ENABLED LED to indicate that the SIM module is now ready for business
     return 0;  //all's well
   }

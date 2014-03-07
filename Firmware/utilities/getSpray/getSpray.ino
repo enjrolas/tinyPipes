@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 #include <Streaming.h>
 #include <SoftwareSerial.h>
 #include "delay.h"
@@ -8,6 +10,8 @@
 #define GSM_POWER 4
 #define PANEL_EN 5
 #define SIM_STATUS 6
+#define POST_STRING_ADDRESS 1
+#define MESSAGE_INDEX 0
 
 boolean tcpSetup=false;
 boolean httpSetup=false;
@@ -24,8 +28,8 @@ void setup()
   pinMode(GSM_POWER, OUTPUT);
   pinMode(SIM_STATUS, INPUT);
   Serial.println("TinyPipes is booting up...");
-  checkSIM();
   bootGSMModule();
+  checkSIM();
   setupWatchdog();
 }
 
@@ -35,9 +39,9 @@ void bootGSMModule()
   boolean booted=false;
   while(digitalRead(SIM_STATUS)==0)
   {
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial.println("it seems that the module is off.  Booting it");
-    #endif
+#endif
     digitalWrite(GSM_POWER, HIGH);
     watchdogDelay(2000);
     digitalWrite(GSM_POWER, LOW);
@@ -46,9 +50,9 @@ void bootGSMModule()
   }
   if(booted)
   {
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial<<"letting the module finish booting\n";
-    #endif
+#endif
     watchdogDelay(5000);
   }
   Serial.println("GSM module is powered up");
@@ -73,28 +77,29 @@ String readLine()
   }
   while((a!='\n')&&((millis()-start)<timeout));
   if((millis()-start)>timeout)
-  #ifdef DEBUG  
+#ifdef DEBUG  
     Serial<<"string timed out:"<<line<<endl;
-  #endif
+#endif
   line.trim();
   return line;
 }
 
 
-int checkSIM()
+char checkSIM()
 {
   flushBuffer();
   GSM.println("AT+CPIN?");
   watchdogDelay(500);
   readLine();  //the first line is blank
   readLine();  //the second line is blank, too
-  String response=readLine();
+  char response[50];
+  horribleReadline(response, sizeof(response));
   Serial.println(response);
-  if((response.indexOf("ERROR")>=0) || (response.indexOf("NOT")>=0))
+  if((strstr(response, "ERROR")!=NULL) || (strstr(response, "NOT")!=NULL))
   {
-    #ifdef DEBUG  
+#ifdef DEBUG  
     Serial.println("looks like there's some problem with the SIM.  Rebooting the cell module");
-    #endif
+#endif
     bootGSMModule();
     return -1;  //some problemo with the SIM-O
   }
@@ -107,28 +112,21 @@ void flushBuffer()
 {
   Serial.println("flushing...");
   while(GSM.available()>0)
-    Serial.write(GSM.read());
-}
-
-void loop()
-{
-  if(cycles%10==0)
   {
-    checkSIM();
-//    getSpray();
-    checkMessages();
+    Serial.write(GSM.read());
+    wdt_reset();  //if I don't pet the dog, I can actually get stuck reading for more than 8 seconds,
+    //and the dog bites and resets the system
   }
-  watchdogDelay(1000);
-  cycles++;
 }
 
-  //the AT command to return phone number
-  //returns it in this format:
-  //
-  //+CNUM: "","13714281494",129,7,4
 
-  //this function pulls the meat of the number from that line and returns the String
-  //13714281494  
+//the AT command to return phone number
+//returns it in this format:
+//
+//+CNUM: "","13714281494",129,7,4
+
+//this function pulls the meat of the number from that line and returns the String
+//13714281494  
 String getPhoneNumber()
 {
   flushBuffer();
@@ -147,20 +145,21 @@ String getPhoneNumber()
 
 void getSpray()
 {
-    String url="http://valve.tinypipes.net/getSpray/"+getPhoneNumber()+"/";
-    Serial.println(url);
-    String data=submitHttpRequest(url);
-    if(!data.equals("None"))  // only do this if there is a spray to send out
-    {
-      //parse out the number and content
-      unsigned char commaIndex=data.indexOf(',');
-      String to=data.substring(data.indexOf(':')+1, commaIndex);
-      String content=data.substring(data.indexOf(':', commaIndex)+1);
-      Serial<<"to:  "<<to<<"\n";
-      Serial<<"content:  "<<content<<"\n";
-      //send the SMS
-      sendSMS(to, content);  
-    }
+  String url="http://valve.tinypipes.net/getSpray/"+getPhoneNumber()+"/";
+  Serial.println(url);
+  String data=submitHttpRequest(url);
+  if(!data.equals("None"))  // only do this if there is a spray to send out
+  {
+    //parse out the number and content
+    unsigned char commaIndex=data.indexOf(',');
+    char to[100];
+    data.substring(data.indexOf(':')+1, commaIndex);
+    String content=data.substring(data.indexOf(':', commaIndex)+1);
+    Serial<<"to:  "<<to<<"\n";
+    Serial<<"content:  "<<content<<"\n";
+    //send the SMS
+    sendSMS(to, content);  
+  }
 }
 
 void sendSMS(String number, String message)
@@ -189,26 +188,26 @@ void setupHttp()
 {
   GSM.println("AT+CGATT?");
   watchdogDelay(500);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");//setting the SAPBR, the connection type is using gprs
   watchdogDelay(1000);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+SAPBR=3,1,\"APN\",\"CMNET\"");//setting the APN, the second need you fill in your local apn server
-//  GSM.println("AT+SAPBR=3,1,\"APN\",\"hkcsl\"");//setting the APN, the second need you fill in your local apn server
+  //  GSM.println("AT+SAPBR=3,1,\"APN\",\"hkcsl\"");//setting the APN, the second need you fill in your local apn server
   watchdogDelay(4000);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+SAPBR=1,1");//setting the SAPBR, for detail you can refer to the AT command mamual
   watchdogDelay(2000);
- 
+
   showSerialData(); 
   GSM.println("AT+HTTPINIT"); //init the HTTP request
- 
+
   watchdogDelay(500); 
   showSerialData();
 }
@@ -222,20 +221,20 @@ String submitHttpRequest(String url)
     setupHttp();
     httpSetup=true;
   }
- 
+
   GSM.print("AT+HTTPPARA=\"URL\",\"");
   GSM.print(url);
   GSM.println("\"");// setting the httppara, the second parameter is the website you want to access
   watchdogDelay(500);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+HTTPACTION=0");//submit the request 
   watchdogDelay(3000);//the delay is very important, the delay time is base on the return from the website, if the return datas are very large, the time required longer.
   //while(!GSM.available());
- 
+
   showSerialData();
- 
+
   GSM.println("AT+HTTPREAD");// read the data from the website you access
   delay(2000);
   unsigned char i;
@@ -254,50 +253,50 @@ String httpPost(String url, String parameters)
 {
   GSM.println("AT+CGATT?");
   watchdogDelay(500);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+SAPBR=3,1,\"CONTYPE\",\"GPRS\"");//setting the SAPBR, the connection type is using gprs
   watchdogDelay(1000);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+SAPBR=3,1,\"APN\",\"CMNET\"");//setting the APN, the second need you fill in your local apn server
   watchdogDelay(4000);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+SAPBR=1,1");//setting the SAPBR, for detail you can refer to the AT command mamual
   watchdogDelay(2000);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+HTTPINIT"); //init the HTTP request
- 
+
   watchdogDelay(2000); 
   showSerialData();
- 
+
   GSM.print("AT+HTTPPARA=\"URL\",\"");
   GSM.print(url);
   GSM.println("\"");// setting the httppara, the second parameter is the website you want to access
   watchdogDelay(1000);
- 
+
   showSerialData();
- 
+
   GSM.println("AT+HTTPACTION=0");//submit the request 
   watchdogDelay(10000);//the delay is very important, the delay time is base on the return from the website, if the return datas are very large, the time required longer.
   //while(!GSM.available());
- 
+
   showSerialData();
- 
+
   GSM.println("AT+HTTPREAD");// read the data from the website you access
   delay(500);
-  
+
   showSerialData();
-  
+
   GSM.println("");
   delay(500);
-  
+
 }
 
 void setupTcp()
@@ -318,12 +317,12 @@ void setupTcp()
   showSerialData();
 }
 
-void tcpPOSTRequest(char * host, char * url, char * content)
+void tcpPOSTRequest(char * host, char * url, int length)
 {
-  
-  #ifdef DEBUG
+
+#ifdef DEBUG
   Serial<<"initializing POST request\n";
-  #endif
+#endif
 
   if(!tcpSetup)
   {
@@ -343,7 +342,6 @@ void tcpPOSTRequest(char * host, char * url, char * content)
   watchdogDelay(4000);
 
   showSerialData();
-  Serial<<content<<"\n";
 
   sendATCommand("AT+CIPSEND", ">", 3000);
   sprintf(temp,"POST %s HTTP/1.1",url);
@@ -353,9 +351,9 @@ void tcpPOSTRequest(char * host, char * url, char * content)
   GSM.println("User-Agent: bigBooty/1.0");
   GSM.println("Content-Type: application/x-www-form-urlencoded");
   GSM.print("Content-Length: ");
-  GSM.println(strlen(content));
+  GSM.println(length);
   GSM.println();
-  GSM.println(content);
+  sendEEPROMdata();
 
   GSM.println((char)26);//sending
   watchdogDelay(5000);//waitting for reply, important! the time is base on the condition of internet 
@@ -370,115 +368,243 @@ void tcpPOSTRequest(char * host, char * url, char * content)
 //deletes an SMS message from memory
 void deleteMessage(int index)
 {
+//  Serial<<"deleting message "<<index<<endl;
   GSM.print("AT+CMGD=");
   GSM.println(index);  
 
 }
 
-//forward the message up to the server in a POST request, then delete it
-void postMessage(int index)
+uint16_t getLength(char * buffer)
+{
+  uint16_t maxLength=200;
+  uint16_t pointer=0;
+  while((*(buffer+pointer)!=0)&&(pointer<maxLength))
+    pointer++;
+  return pointer;
+}
+
+uint16_t horribleReadline(char *buffer, uint16_t limit)
+{
+  char a;
+  uint16_t pointer=0;
+  while(true)
+  {
+    if(GSM.available()>0){
+      a=GSM.read();
+      if(a==10) //check for a carriage return
+      {
+        *(buffer + pointer)=0;  //end the line
+        return pointer;
+      }
+      else if(pointer<limit-1)
+      {
+        *(buffer + pointer) = a;
+        pointer++;
+      }
+      else
+      {
+        return pointer;  //we hit the limit, we gotta call it
+      }
+    }
+  }
+}
+
+void removeChar(char * buffer, char target)
+{
+  uint16_t pointer, runner, deleted;
+  uint16_t limit=getLength(buffer);
+  deleted=0;
+  for(pointer=0;pointer<limit;pointer++)
+  {   
+    if(*(buffer+pointer+deleted)==target)
+      deleted++;
+    if((pointer+deleted)>limit)
+    {
+      *(buffer+pointer)=0;
+      break;
+    }
+    else
+      *(buffer+pointer)=*(buffer+pointer+deleted);
+  }  
+}
+
+void sendEEPROMdata()
+{
+  uint16_t address=POST_STRING_ADDRESS;
+  char data;
+  Serial.println("sending EEPROM string");
+  do{
+    data=EEPROM.read(address);
+    GSM.print(data);
+    Serial.print(data);
+    address++;
+  }
+  while(data!=0);
+  GSM.println();
+}
+
+void printEEPROMdata()
+{
+  uint16_t address=POST_STRING_ADDRESS;
+  char data;
+  do{
+    data=EEPROM.read(address);
+    Serial.print(data);
+    address++;
+  }
+  while(data!=0);
+}
+
+uint16_t saveString(char * buffer, uint16_t address)
+{
+  uint16_t pointer=0;
+  while(*(buffer+pointer)!=0)
+  {
+    EEPROM.write(address+pointer, *(buffer+pointer));
+    pointer++;
+  }
+  EEPROM.write(address+pointer, 0); //null terminate that string!
+  return address+pointer;
+}
+
+
+//puts together the parameter string for a POST request and saves it to EEPROM (it was too unweildly to pass around as a parameter)
+//returns the length of the string
+uint16_t constructPostString(int index)
 {
   flushBuffer();
   GSM.print("AT+CMGR=");
   GSM.print(index, DEC);
   GSM.print("\r\n");
-  String from;
-   String date, time;
   readLine();
   readLine();
-  char messageContent[160];
-  char firstLine[160];
-  horribleReadline(firstLine, sizeof(firstLine));
-  horribleReadline(messageContent, sizeof(messageContent));
-
-  Serial<<endl<<strlen(firstLine)<<endl<<firstLine<<endl;
-  strtok(firstLine, ",");  //throw out everything before the first line
-  Serial<<firstLine<<endl;
-  from=strtok(NULL, ",");  //the second phone number is in between the commas.
-  /*
+  //  char messageContent[160];
+  char temp[200];
+  char from[18];
+  char metadata[22];
+  //  String temp=readLine();
+  horribleReadline(temp,200);
+  strcpy(metadata,strtok(temp, ","));  //throw out everything before the first line
+  strcpy(from, strtok(NULL, ","));  //the second phone number is in between the commas.
+  removeChar(from, '\"');
   strtok(NULL, ",");
+  /*
   date=strtok(NULL, ",");
-  time=strtok(NULL, ",");
-  */
-//  Serial<<firstLine<<endl;
-  Serial<<from<<endl;
-  #ifdef DEBUG
-  Serial<<"Message metadata: "<<firstLine<<endl;
-  Serial<<"Message content: "<<messageContent<<endl;
-  Serial<<"Time Stamp: "<<time<<" "<<date<<endl;
-  Serial<<"From Number: "<<from<<endl;
-  #endif
-  Serial<<"got this far"<<endl;
-  if(strstr(firstLine, "READ")!=NULL)  //check the metadata to see if this is a message or some weird message.  Like, ew!
+   time=strtok(NULL, ",");
+   */
+  if(strstr(metadata, "READ")!=NULL)  //check the metadata to see if this is a message or some weird message.  Like, ew!
   {
-    char * content;  //160 chars for the text, 20 chars for both phone numbers, 20 chars for the variable names
-    sprintf(content, "From=%s&Origin=+%s&Body=%s", getPhoneNumber(), from, messageContent);
-    Serial<<"content string:  "<<content<<endl;
-    
-//    if((strcmp(from, "")!=0)&&(strcmp(messageContent, "")!=0))  //only post the content and delete the message if we parsed it correctly.
-//    {
-      tcpPOSTRequest("valve.tinypipes.net", "/addSquirt/", content);
-      deleteMessage(index);
-//    }
+    boolean phoneNumber=false, fromNumber=false, message=false;
+    uint16_t before;
+    free(metadata);
+    for(unsigned char a=0;a<sizeof(temp);a++)
+      temp[a]=0;
+    char scratch[22];
+    uint16_t address=POST_STRING_ADDRESS;
+    address=saveString("Body=", address);
+    before=address;
+    horribleReadline(temp+getLength(temp),160);
+    address=saveString(temp, address);
+    if(address-before>1)
+      message=true;
+    address=saveString("&From=", address);
+    getPhoneNumber().toCharArray(scratch,15);
+    before=address;
+    address=saveString(scratch, address);
+    if(address-before>1)
+      phoneNumber=true;
+    address=saveString("&Origin=", address);
+    before=address;
+    address=saveString(from, address);
+    if(address-before>1)
+      fromNumber=true;
+    if(phoneNumber && fromNumber && message)
+      return address;
+    else
+      return false;
   }
+  else
+    return false;
 }
 
-uint16_t horribleReadline (char *buffer, uint16_t limit)
+void saveIndex(unsigned char index)
 {
-	char c;
-	uint16_t ptr = 0;
+  EEPROM.write(MESSAGE_INDEX, index);
+}
 
-	while (1) {
+unsigned char readIndex()
+{
+  return EEPROM.read(MESSAGE_INDEX);
+}
+//forward the message up to the server in a POST request, then delete it
+void postMessage(unsigned char index)
+{
+  
+      //I'm gonna save the index to EEPROM, because dealing with this massive string handling is pretty much guaranteed to mess with RAM.
+      saveIndex(index);
+      Serial<<index<<endl;
+      int postStringLength=constructPostString(index);
+      if(postStringLength>0)
+      {
+        printEEPROMdata();
+        tcpPOSTRequest("valve.tinypipes.net", "/addSquirt/", postStringLength);
+ 
+        //pull the index value back out of EEPROM
+        index=readIndex();
+        deleteMessage(index);
+      }
+}
 
-		if (GSM.available()) {
 
-			c =GSM.read();
+uint16_t getIndex(char * buffer, char target)
+{
+  uint16_t pointer=0;
+  while((*(buffer+pointer)!=target)&&(*(buffer+pointer)!=0))    //note -- this is vulnerable to any strings that aren't null-terminated
+    pointer++;
+  return pointer;
+}
 
-			if (c == 0x0D) { // cr == end of line
-				*(buffer + ptr +1) = 0; // mark end of line
-				break; // return char count
-			}
 
-				if (ptr < (limit - 1)) { // if not at the end of the line
+uint16_t getIndex(char * buffer, uint16_t start, char target)
+{
+  uint16_t pointer=start;
+  while((*(buffer+pointer)!=target)&&(*(buffer+pointer)!=0))    //note -- this is vulnerable to any strings that aren't null-terminated
+    pointer++;
+  return pointer;
+}
 
-					Serial.print ( (char) c); // echo char to user
-					*(buffer + ptr++) = c; // put char into buffer
-
-				} else { // at end of line, can't add any more
-					Serial.print ( (char) 0x07); // ascii bel (beep) if terminal supports it
-				}
-		}
-	}
-
-	return ptr;
+void substring(char* source, char * destination, uint16_t from, uint16_t to)
+{
+  uint16_t pointer;
+  for(pointer=from;pointer<to;pointer++)
+    *(destination+pointer-from)=*(source + pointer);
+  *(destination + pointer - from) =0;  //null-terminate the string
 }
 
 void checkMessages()
 {
   flushBuffer();
-  #ifdef DEBUG
+#ifdef DEBUG
   Serial<<"checking messages...\n";
-  #endif
-  
+#endif
+
   GSM.println("AT+CMGL=\"ALL\"");
   watchdogDelay(500);
   boolean validMessage=false;
-  String line;
+  char line[100];
   int lineNum=0;
   while((!validMessage)&&(GSM.available()>0))
   {
-    line=readLine();
+    horribleReadline(line, sizeof(line));
     Serial<<line<<"\n";
-    if(line.indexOf("CMGL:")>=0)  //there's a new unread message in there
+    if(strstr(line, "CMGL:")!=NULL)  //there's a new unread message in there
       validMessage=true;
   }
   if(validMessage)
   {
-    char temp[10];
     //get the message index
-    line=line.substring(line.indexOf(':')+2, line.indexOf(','));
-    line.toCharArray(temp, 10);
-    int index=atoi(temp);
+    substring(line, line, getIndex(line, ':')+2, getIndex(line, ','));
+    int index=atoi(line);
     postMessage(index);
   }
 }
@@ -490,7 +616,7 @@ void showSerialData()
   {
     Serial.write(GSM.read());
     watchdogDelay(1);
-    
+
   }
 }
 
@@ -533,3 +659,18 @@ int8_t sendATCommand(char* ATcommand, char* expected_answer1, unsigned int timeo
   Serial<<"response: "<<response<<"\n";
   return answer;
 }
+
+void loop()
+{
+  if(cycles%10==0)
+  {
+    checkSIM();
+    //    getSpray();
+    checkMessages();
+
+  }
+  watchdogDelay(1000);
+  cycles++;
+}
+
+
