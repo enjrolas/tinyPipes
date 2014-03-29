@@ -1,4 +1,5 @@
 #include <Streaming.h>
+#include <EEPROM.h>
 #include <SoftwareSerial.h>
 #include "delay.h"
 #include "samples.h"
@@ -6,6 +7,8 @@
 #include "stringHandling.h"
 #include "charging.h"
 #include "blink.h"
+#include "pipe.h"
+
 
 //#define DEBUG 0
 
@@ -51,8 +54,10 @@ void setup()
   checkSIM();
   wattSeconds=0;
   samples=0;
+  initPipe();
   setupWatchdog();
 }
+
 
 //boots or reboots the GSM module 
 void bootGSMModule()
@@ -229,19 +234,43 @@ void readMessage(int index)
   else
   {
     if(message[1].equalsIgnoreCase("connect"))  
-      charging=true;
+    {
+      setCharging();
+      if(verbose)
+        sendSMS(from, "disconnected");
+    }
     if(message[1].equalsIgnoreCase("disconnect"))
-      charging=false;
+    {
+      setDisconnected();
+      if(verbose)
+        sendSMS(from, "charging");
+    }
     if(message[1].equalsIgnoreCase("status"))
       sendSMS(from, generateStatusMessage());
+
+    if(message[1].equalsIgnoreCase("version"))  //return the pipe's firmware version
+       sendSMS(from, pipeVersion);
+
+    if(message[1].equalsIgnoreCase("verbose"))  //return the pipe's firmware version
+    {
+      setVerboseMode();
+      sendSMS(from, "verbose mode");
+    }
+
+    if(message[1].equalsIgnoreCase("quiet"))  //return the pipe's firmware version
+    {
+      setQuietMode();
+      sendSMS(from, "quiet mode");
+    }
+      
+       
     if(message[1].equalsIgnoreCase("test"))
     {
       startBlinking();
       sendSMS(from, generateTestMessage());
       stopBlinking();
     }
-    if(message[1].equalsIgnoreCase("instantaneous"))
-      sendSMS(from, instantaneousMeasurement());
+    
     if(message[1].indexOf("load")>=0)
       load(message[1].substring(4, message[1].length()));  //it comes in the format "load1510XXXXXXXXXXXXXX", so slice out the "load" part and sent it on
   }
@@ -262,6 +291,7 @@ String generateTestMessage()
 {
   unsigned char i;
   String statusString="";
+  boolean fail=false;
 #ifdef DEBUG  
   Serial.println("generating status message");
 #endif
@@ -273,13 +303,47 @@ String generateTestMessage()
   panelCurrent=analogRead(PANEL_CURRENT)*4.15/1023/100/.003;
   float connectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
   float connectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
-  
-  if((disconnectedBatteryVoltage>5)&&(disconnectedPanelVoltage>5)&&(panelCurrent>0))
-    statusString="test passed";
+
+  char reason[25];
+  if(disconnectedBatteryVoltage<10)
+  {
+    fail=true;
+    strcpy(reason,"low battery voltage");
+  }
+
+  if(disconnectedPanelVoltage<10)  //this is ONLY a daytime check, but we're checking to make sure there's a minimum VOC on the panel
+  {
+    fail=true;
+    strcpy(reason,"low panel voltage");
+  }
+
+  if(panelCurrent==0)  // this is ONLY a daytime check -- at night, the panel current will definitely be zero.
+  {
+    fail=true;
+    strcpy(reason,"battery not charging");
+  }
+
+  if(disconnectedBatteryVoltage>disconnectedPanelVoltage)  //this is ONLY a daytime check --- we check that the VOC of the panel is greater than the VOC of the battery, indicating that the panel _can_ charge the battery
+  {
+    fail=true;
+    strcpy(reason,"panel VOC too low");
+  }
+
+  if(fail)
+  {
+    statusString="test failed,";
+    statusString+=reason;
+    statusString+=",";
+  }
   else
-    statusString="test failed";
+    statusString="test passed,_,";
+  if(charging)
+    statusString+="charging,";
+  else
+    statusString+="disconnected,";
+  statusString+=pipeVersion;  
+  statusString+=',';
   char temp[10];
-  statusString+=",";
   floatToString(temp,disconnectedPanelVoltage,2);
   statusString+=temp;
   statusString+=",";
@@ -294,6 +358,7 @@ String generateTestMessage()
   statusString+=",";
   floatToString(temp,connectedBatteryVoltage,2);
   statusString+=temp;
+  Serial<<statusString<<endl;
   return statusString;
 
 }
@@ -333,49 +398,9 @@ void deleteMessage(int index)
 
 }
 
-
-String instantaneousMeasurement()
-{
-#ifdef DEBUG  
-  Serial.println("taking an instantaneous measurement");
-#endif
-  disconnectPanel();  //disconnect the panel from the battery, so we can get good measurements of panel and battery voltage
-  watchdogDelay(5000);
-  float disconnectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
-  float disconnectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
-  connectPanel();
-  watchdogDelay(5000);    
-  panelCurrent=analogRead(PANEL_CURRENT)*4.15/1023/100/.003;
-  float connectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
-  float connectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
-  String statusString="";
-  if(charging)
-    statusString+="charging,";
-  else
-    statusString+="disconnected,";
-  char temp[20];
-  floatToString(temp,disconnectedPanelVoltage,2);
-  statusString+=temp;
-  statusString+=",";
-  floatToString(temp,disconnectedBatteryVoltage,2);
-  statusString+=temp;
-  statusString+=",";
-  floatToString(temp,panelCurrent,2);
-  statusString+=temp;
-  statusString+=",";
-  floatToString(temp,connectedPanelVoltage,2);
-  statusString+=temp;
-  statusString+=",";
-  floatToString(temp,connectedBatteryVoltage,2);
-  statusString+=temp;
-  statusString+=",";
-  Serial.println(statusString);
-  //set everything back the way it was
-  return statusString;
-}
-
 void sendSMS(String number, String message)
 {
+  Serial<<message<<endl;
 
   GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
   watchdogDelay(500);
@@ -393,7 +418,28 @@ void sendSMS(String number, String message)
   watchdogDelay(1000);
   readLine();
   readLine();
+}
 
+void testResponse(String number)
+{
+  Serial<<message<<endl;
+
+  GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
+  watchdogDelay(500);
+  GSM.print("AT+CMGS=\"");
+  GSM.print(number);
+  GSM.println("\"");//send sms message, be careful need to add a country code before the cellphone number
+  watchdogDelay(500);
+  printTestMessage()
+    watchdogDelay(500);
+  GSM.println((char)26);//the ASCII code of the ctrl+z is 26
+  watchdogDelay(500);
+  GSM.println();
+  watchdogDelay(4000);
+  GSM.print("AT+CMGDA=\"DEL SENT\"\r\n");  //delete all sent messages
+  watchdogDelay(1000);
+  readLine();
+  readLine();
 }
 
 void loop()
@@ -438,7 +484,6 @@ void checkForMessages()
     } 
   }
 }
-
 
 void writeCycleTime()
 {
@@ -616,6 +661,7 @@ void disconnectPanel()
   digitalWrite(PANEL_EN, LOW);
   digitalWrite(CHARGING, LOW);
 }
+
 
 
 

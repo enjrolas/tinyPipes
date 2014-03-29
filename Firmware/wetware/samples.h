@@ -1,12 +1,12 @@
 #include <avr/eeprom.h>
 unsigned char samplePeriods;
 
-#define DATA_START 2
+#define DATA_START 8
 
 #define PERIOD 1  //seconds between samples
 #define SAMPLE_PERIOD 10800  //three hours
 //#define SAMPLE_PERIOD 10  // total seconds 
-#define AVAILABLE_EEPROM 1000  //there are 1000 available bytes of EEPROM
+#define AVAILABLE_EEPROM 1000-DATA_START,  //there are 1000 available bytes of EEPROM
 
 
 struct Sample

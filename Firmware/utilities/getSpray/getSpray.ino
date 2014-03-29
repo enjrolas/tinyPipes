@@ -9,7 +9,7 @@ SoftwareSerial GSM(3,2);
 #include "stringHandling.h"
 #include<stdlib.h>
 
-//#define DEBUG 1
+// #define DEBUG 1
 #define GSM_POWER 4
 #define PANEL_EN 5
 #define SIM_STATUS 6
@@ -37,6 +37,14 @@ void setup()
 void bootGSMModule()
 {
   boolean booted=false;
+  //if the module is on, turn it off
+  if(digitalRead(SIM_STATUS)==0)
+  {
+    digitalWrite(GSM_POWER, HIGH);
+    watchdogDelay(2000);
+    digitalWrite(GSM_POWER, LOW);
+    watchdogDelay(3000);
+  }
   while(digitalRead(SIM_STATUS)==0)
   {
 #ifdef DEBUG
@@ -157,8 +165,10 @@ void getSpray()
     //parse out the number and content
     unsigned char commaIndex=getIndex(data, ',');
     char to[22];
-    substring(data, to, getIndex(data, ':'), commaIndex);
+    substring(data, to, getIndex(data, ':')+1, commaIndex);
     substring(data, data, getIndex(data, ':', commaIndex)+1, strlen(data));
+    trim(to, strlen(to));
+    trim(data, strlen(data));
     Serial<<"to:  "<<to<<"\n";
     Serial<<"content:  "<<data<<"\n";
     //send the SMS
@@ -201,7 +211,8 @@ void setupHttp()
   showSerialData();
 
   GSM.println("AT+SAPBR=3,1,\"APN\",\"CMNET\"");//setting the APN, the second need you fill in your local apn server
-  //  GSM.println("AT+SAPBR=3,1,\"APN\",\"hkcsl\"");//setting the APN, the second need you fill in your local apn server
+  //GSM.println("AT+SAPBR=3,1,\"APN\",\"hkcsl\"");//setting the APN, the second need you fill in your local apn server
+  //GSM.println("AT+SAPBR=3,1,\"APN\",\"pccw\"");//setting the APN, the second need you fill in your local apn server
   watchdogDelay(4000);
 
   showSerialData();
@@ -234,7 +245,7 @@ int submitHttpRequest(String url)
   showSerialData();
 
   GSM.println("AT+HTTPACTION=0");//submit the request 
-  watchdogDelay(3000);//the delay is very important, the delay time is base on the return from the website, if the return datas are very large, the time required longer.
+  watchdogDelay(5000);//the delay is very important, the delay time is base on the return from the website, if the return datas are very large, the time required longer.
   //while(!GSM.available());
 
   showSerialData();
@@ -322,7 +333,7 @@ void tcpPOSTRequest(char * host, char * url, int length)
 //deletes an SMS message from memory
 void deleteMessage(int index)
 {
-//  Serial<<"deleting message "<<index<<endl;
+  //  Serial<<"deleting message "<<index<<endl;
   GSM.print("AT+CMGD=");
   GSM.println(index);  
 
@@ -410,20 +421,20 @@ unsigned char readIndex()
 //forward the message up to the server in a POST request, then delete it
 void postMessage(unsigned char index)
 {
-  
-      //I'm gonna save the index to EEPROM, because dealing with this massive string handling is pretty much guaranteed to mess with RAM.
-      saveIndex(index);
-      Serial<<index<<endl;
-      int postStringLength=constructPostString(index);
-      if(postStringLength>0)
-      {
-        printEEPROMdata();
-        tcpPOSTRequest("valve.tinypipes.net", "/addSquirt/", postStringLength);
- 
-        //pull the index value back out of EEPROM
-        index=readIndex();
-        deleteMessage(index);
-      }
+
+  //I'm gonna save the index to EEPROM, because dealing with this massive string handling is pretty much guaranteed to mess with RAM.
+  saveIndex(index);
+  Serial<<index<<endl;
+  int postStringLength=constructPostString(index);
+  if(postStringLength>0)
+  {
+    printEEPROMdata();
+    tcpPOSTRequest("valve.tinypipes.net", "/addSquirt/", postStringLength);
+
+    //pull the index value back out of EEPROM
+    index=readIndex();
+    deleteMessage(index);
+  }
 }
 
 
@@ -483,7 +494,7 @@ int8_t sendATCommand(char* ATcommand, char* expected_answer1, unsigned int timeo
   GSM.println(ATcommand);    // Send the AT command 
 
 
-  x = 0;
+    x = 0;
   previous = millis();
   Serial<<ATcommand<<endl;
   // this loop waits for the answer
@@ -508,7 +519,7 @@ int8_t sendATCommand(char* ATcommand, char* expected_answer1, unsigned int timeo
 
 void loop()
 {
-  if(cycles%10==0)
+  if(cycles%2==0)
   {
     checkSIM();
     getSpray();
@@ -518,5 +529,6 @@ void loop()
   watchdogDelay(1000);
   cycles++;
 }
+
 
 

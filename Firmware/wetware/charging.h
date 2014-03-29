@@ -19,7 +19,6 @@ float panelPWM=50;
 float increment;
 unsigned char chargePoint=SET_POINTS-1;
 
-boolean charging=false;
 
 unsigned char CV_cycles=0;
 unsigned char CC_cycles=0;
