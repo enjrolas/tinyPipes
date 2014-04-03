@@ -5280,6 +5280,7 @@ diameter 3.3 mm, vertical, grid 10.16 mm</description>
 <wire x1="4" y1="11.5" x2="4" y2="4.5" width="0.127" layer="21"/>
 <wire x1="4" y1="4.5" x2="5" y2="4.5" width="0.127" layer="21"/>
 <wire x1="5" y1="4.5" x2="5" y2="11.5" width="0.127" layer="21"/>
+<hole x="114.3" y="127" drill="40.64"/>
 <hole x="4.5" y="5" drill="1.6"/>
 <hole x="4.5" y="9.5" drill="1.6"/>
 </package>

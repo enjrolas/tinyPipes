@@ -5255,33 +5255,16 @@ diameter 3.3 mm, vertical, grid 10.16 mm</description>
 <rectangle x1="-1.27" y1="5.08" x2="7.62" y2="31.75" layer="41"/>
 </package>
 <package name="BARREL_PLUG">
-<smd name="+@2" x="-1" y="5" dx="2" dy="2" layer="1"/>
-<wire x1="0" y1="0" x2="0.75" y2="0" width="0.127" layer="21"/>
-<wire x1="0.75" y1="0" x2="8.25" y2="0" width="0.127" layer="21"/>
-<wire x1="8.25" y1="0" x2="9" y2="0" width="0.127" layer="21"/>
+<smd name="+2" x="-1" y="5" dx="2" dy="2" layer="1"/>
+<wire x1="0" y1="0" x2="9" y2="0" width="0.127" layer="21"/>
 <wire x1="9" y1="0" x2="9" y2="15" width="0.127" layer="21"/>
 <wire x1="9" y1="15" x2="6" y2="15" width="0.127" layer="21"/>
 <wire x1="6" y1="15" x2="6" y2="14" width="0.127" layer="21"/>
 <wire x1="6" y1="14" x2="0" y2="14" width="0.127" layer="21"/>
 <wire x1="0" y1="14" x2="0" y2="0" width="0.127" layer="21"/>
-<smd name="-@2" x="10" y="5" dx="2" dy="2" layer="1"/>
-<smd name="+@1" x="-1" y="11" dx="2" dy="2" layer="1"/>
-<smd name="-@1" x="10" y="11" dx="2" dy="2" layer="1"/>
-<wire x1="0.75" y1="0" x2="0.75" y2="12.5" width="0.127" layer="21"/>
-<wire x1="0.75" y1="12.5" x2="2.25" y2="12.5" width="0.127" layer="21"/>
-<wire x1="2.25" y1="12.5" x2="6.75" y2="12.5" width="0.127" layer="21"/>
-<wire x1="6.75" y1="12.5" x2="8.25" y2="12.5" width="0.127" layer="21"/>
-<wire x1="8.25" y1="12.5" x2="8.25" y2="0" width="0.127" layer="21"/>
-<wire x1="2.25" y1="12.5" x2="2.25" y2="11.5" width="0.127" layer="21"/>
-<wire x1="2.25" y1="11.5" x2="4" y2="11.5" width="0.127" layer="21"/>
-<wire x1="4" y1="11.5" x2="5" y2="11.5" width="0.127" layer="21"/>
-<wire x1="5" y1="11.5" x2="6.75" y2="11.5" width="0.127" layer="21"/>
-<wire x1="6.75" y1="11.5" x2="6.75" y2="12.5" width="0.127" layer="21"/>
-<wire x1="4" y1="11.5" x2="4" y2="4.5" width="0.127" layer="21"/>
-<wire x1="4" y1="4.5" x2="5" y2="4.5" width="0.127" layer="21"/>
-<wire x1="5" y1="4.5" x2="5" y2="11.5" width="0.127" layer="21"/>
-<hole x="4.5" y="5" drill="1.6"/>
-<hole x="4.5" y="9.5" drill="1.6"/>
+<smd name="-2" x="10" y="5" dx="2" dy="2" layer="1"/>
+<smd name="+1" x="-1" y="11" dx="2" dy="2" layer="1"/>
+<smd name="-1" x="10" y="11" dx="2" dy="2" layer="1"/>
 </package>
 </packages>
 <symbols>
@@ -5808,18 +5791,6 @@ diameter 3.3 mm, vertical, grid 10.16 mm</description>
 <wire x1="-2.54" y1="-7.62" x2="0" y2="-10.16" width="0.254" layer="94"/>
 <wire x1="2.54" y1="-7.62" x2="5.08" y2="-10.16" width="0.254" layer="94"/>
 <wire x1="0" y1="-7.62" x2="2.54" y2="-10.16" width="0.254" layer="94"/>
-</symbol>
-<symbol name="POWER_JACK">
-<pin name="+" x="-2.54" y="0" length="short"/>
-<pin name="-" x="-2.54" y="-2.54" length="short"/>
-<wire x1="0" y1="1.27" x2="7.62" y2="1.27" width="0.254" layer="94"/>
-<wire x1="7.62" y1="1.27" x2="7.62" y2="-0.762" width="0.254" layer="94"/>
-<wire x1="7.62" y1="-0.762" x2="0" y2="-0.762" width="0.254" layer="94"/>
-<wire x1="0" y1="-0.762" x2="0" y2="1.016" width="0.254" layer="94"/>
-<wire x1="-1.27" y1="3.048" x2="10.414" y2="3.048" width="0.254" layer="94"/>
-<wire x1="10.414" y1="3.048" x2="10.414" y2="-2.794" width="0.254" layer="94"/>
-<wire x1="10.414" y1="-2.794" x2="-1.27" y2="-2.794" width="0.254" layer="94"/>
-<wire x1="-1.27" y1="-2.794" x2="-1.27" y2="3.048" width="0.254" layer="94"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -8691,22 +8662,6 @@ will be further integrated into the Sparkfun Library for other footprints.  It c
 <connects>
 <connect gate="G$1" pin="ANTENNA" pad="ANTENNA"/>
 <connect gate="G$1" pin="GND" pad="GND"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="BARREL_JACK">
-<gates>
-<gate name="G$1" symbol="POWER_JACK" x="-2.54" y="0"/>
-</gates>
-<devices>
-<device name="" package="BARREL_PLUG">
-<connects>
-<connect gate="G$1" pin="+" pad="+@1 +@2"/>
-<connect gate="G$1" pin="-" pad="-@1 -@2"/>
 </connects>
 <technologies>
 <technology name=""/>

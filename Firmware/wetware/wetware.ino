@@ -363,6 +363,75 @@ String generateTestMessage()
 
 }
 
+void printTestMessage()
+{
+  unsigned char i;
+  boolean fail=false;
+  disconnectPanel();  //disconnect the panel from the battery, so we can get good measurements of panel and battery voltage
+  float disconnectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
+  float disconnectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
+  connectPanel();
+  watchdogDelay(1000);    
+  panelCurrent=analogRead(PANEL_CURRENT)*4.15/1023/100/.003;
+  float connectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
+  float connectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
+
+  char reason[25];
+  if(disconnectedBatteryVoltage<10)
+  {
+    fail=true;
+    strcpy(reason,"low battery voltage");
+  }
+
+  if(disconnectedPanelVoltage<10)  //this is ONLY a daytime check, but we're checking to make sure there's a minimum VOC on the panel
+  {
+    fail=true;
+    strcpy(reason,"low panel voltage");
+  }
+
+  if(panelCurrent==0)  // this is ONLY a daytime check -- at night, the panel current will definitely be zero.
+  {
+    fail=true;
+    strcpy(reason,"battery not charging");
+  }
+
+  if(disconnectedBatteryVoltage>disconnectedPanelVoltage)  //this is ONLY a daytime check --- we check that the VOC of the panel is greater than the VOC of the battery, indicating that the panel _can_ charge the battery
+  {
+    fail=true;
+    strcpy(reason,"panel VOC too low");
+  }
+
+  if(fail)
+  {
+    GSM<<"test failed,"<<reason<<",";
+  }
+  else
+    GSM<<"test passed,_,";
+  if(charging)
+    GSM<<"charging,";
+  else
+    GSM<<"disconnected,";
+  GSM<<pipeVersion;  
+  GSM<<',';
+  char temp[10];
+  floatToString(temp,disconnectedPanelVoltage,2);
+  GSM<<temp;
+  GSM<<",";
+  floatToString(temp,disconnectedBatteryVoltage,2);
+  GSM<<temp;
+  GSM<<",";
+  floatToString(temp,panelCurrent,2);
+  GSM<<temp;
+  GSM<<",";
+  floatToString(temp,connectedPanelVoltage,2);
+  GSM<<temp;
+  GSM<<",";
+  floatToString(temp,connectedBatteryVoltage,2);
+  GSM<<temp;
+
+}
+
+
 
 String generateStatusMessage()
 {
@@ -422,7 +491,6 @@ void sendSMS(String number, String message)
 
 void testResponse(String number)
 {
-  Serial<<message<<endl;
 
   GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
   watchdogDelay(500);
@@ -430,8 +498,8 @@ void testResponse(String number)
   GSM.print(number);
   GSM.println("\"");//send sms message, be careful need to add a country code before the cellphone number
   watchdogDelay(500);
-  printTestMessage()
-    watchdogDelay(500);
+  printTestMessage();
+  watchdogDelay(500);
   GSM.println((char)26);//the ASCII code of the ctrl+z is 26
   watchdogDelay(500);
   GSM.println();

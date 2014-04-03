@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.25" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
@@ -5280,8 +5280,6 @@ diameter 3.3 mm, vertical, grid 10.16 mm</description>
 <wire x1="4" y1="11.5" x2="4" y2="4.5" width="0.127" layer="21"/>
 <wire x1="4" y1="4.5" x2="5" y2="4.5" width="0.127" layer="21"/>
 <wire x1="5" y1="4.5" x2="5" y2="11.5" width="0.127" layer="21"/>
-<hole x="4.5" y="5" drill="1.6"/>
-<hole x="4.5" y="9.5" drill="1.6"/>
 </package>
 </packages>
 <symbols>
@@ -5810,16 +5808,6 @@ diameter 3.3 mm, vertical, grid 10.16 mm</description>
 <wire x1="0" y1="-7.62" x2="2.54" y2="-10.16" width="0.254" layer="94"/>
 </symbol>
 <symbol name="POWER_JACK">
-<pin name="+" x="-2.54" y="0" length="short"/>
-<pin name="-" x="-2.54" y="-2.54" length="short"/>
-<wire x1="0" y1="1.27" x2="7.62" y2="1.27" width="0.254" layer="94"/>
-<wire x1="7.62" y1="1.27" x2="7.62" y2="-0.762" width="0.254" layer="94"/>
-<wire x1="7.62" y1="-0.762" x2="0" y2="-0.762" width="0.254" layer="94"/>
-<wire x1="0" y1="-0.762" x2="0" y2="1.016" width="0.254" layer="94"/>
-<wire x1="-1.27" y1="3.048" x2="10.414" y2="3.048" width="0.254" layer="94"/>
-<wire x1="10.414" y1="3.048" x2="10.414" y2="-2.794" width="0.254" layer="94"/>
-<wire x1="10.414" y1="-2.794" x2="-1.27" y2="-2.794" width="0.254" layer="94"/>
-<wire x1="-1.27" y1="-2.794" x2="-1.27" y2="3.048" width="0.254" layer="94"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -8691,22 +8679,6 @@ will be further integrated into the Sparkfun Library for other footprints.  It c
 <connects>
 <connect gate="G$1" pin="ANTENNA" pad="ANTENNA"/>
 <connect gate="G$1" pin="GND" pad="GND"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="BARREL_JACK">
-<gates>
-<gate name="G$1" symbol="POWER_JACK" x="-2.54" y="0"/>
-</gates>
-<devices>
-<device name="" package="BARREL_PLUG">
-<connects>
-<connect gate="G$1" pin="+" pad="+@1 +@2"/>
-<connect gate="G$1" pin="-" pad="-@1 -@2"/>
 </connects>
 <technologies>
 <technology name=""/>
