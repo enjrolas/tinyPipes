@@ -422,8 +422,6 @@ void sendSMS(String number, String message)
 
 void testResponse(String number)
 {
-  Serial<<message<<endl;
-
   GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
   watchdogDelay(500);
   GSM.print("AT+CMGS=\"");
