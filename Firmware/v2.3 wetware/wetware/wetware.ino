@@ -41,7 +41,7 @@ void setup()
   //this is on an old tinyPipes panel frm the first installation, so I'm running it at 19200 baud.  Newer stuff shoudl
   //run at 9600
   Serial.begin(9600);
-  GSM.begin(96  00);
+  GSM.begin(9600);
   pinMode(PANEL_EN, OUTPUT);
   pinMode(CHARGING, OUTPUT);
   pinMode(ENABLED, OUTPUT);
