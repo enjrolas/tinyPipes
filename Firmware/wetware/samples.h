@@ -36,6 +36,7 @@ void saveSample(struct Sample sam)
 
 void readSample(struct Sample& sam, unsigned char index)
 {
+//  Serial<<sizeof(sam)<<endl;
   eeprom_read_block((void*)&sam, (void*)(DATA_START+index*(sizeof(sam))), sizeof(sam));  
 }
 

@@ -2,9 +2,10 @@
 
 char * pipeVersion="v2.8";  //hardware/firmware version
 
-boolean charging=true;
+boolean charging=false;
 boolean firstBoot=false;
 boolean verbose=false;
+int signal=0;   //cellular signal strength (in dBm)
 
 //EEPROM addresses
 #define PERIOD 1        //the seconds in-between samples
@@ -12,8 +13,10 @@ boolean verbose=false;
 #define VERBOSE 3
 #define VERSION 4      //where we store our 4-bit version string
 
+
 void initPipe()
 {
+  readIndex();
   int a;
   for(int i=0;i<1000;i++)
     a+=EEPROM.read(i);

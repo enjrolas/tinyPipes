@@ -124,9 +124,30 @@ String readLine()
   return line;
 }
 
+void updateSignalStrength()
+{
+  flushBuffer();
+  GSM.println("AT+CSQ");
+  unsigned char i;
+  watchdogDelay(500);
+  for(i=0;i<2;i++)
+    readLine();
+  String line=readLine();
+  Serial.println(line);
+  String signalStrength=line.substring(line.indexOf(":")+1, line.indexOf(","));
+  signalStrength.trim();
+  Serial.println(signalStrength);
+  char index[10];
+  signalStrength.toCharArray(index, 10);
+  signal=map(atoi(index),2,30,-110, -54);
+  Serial<<signalStrength<<" "<<signal<<endl;
+}
+
+
 
 int checkSIM()
 {
+  updateSignalStrength();
   GSM.println("AT+CPIN?");
   readLine();  //the first line is blank
   readLine();  //the second line is blank, too
@@ -180,11 +201,13 @@ void readMessage(int index)
   timeStamp=message[0].substring(message[0].lastIndexOf("\"",message[0].length()-2));
   from.replace("\"","");
   timeStamp.replace("\"","");
+  /*
   Serial<<"Message metadata: "<<message[0]<<endl;
   Serial<<"Message content: "<<message[1]<<endl;
   Serial<<"Time Stamp: "<<timeStamp<<endl;
   Serial<<"From Number: "<<from<<endl;
-
+  */
+  Serial<<message[0]<<endl<<message[1]<<endl<<timeStamp<<endl<<from<<endl;
   message[1].trim();
 
   char **words;
@@ -192,9 +215,6 @@ void readMessage(int index)
   char temp[160];
   message[1].toCharArray(temp, 160);
   words = split(temp, " ", &len);
-
-  Serial.print("length: ");
-  Serial.println(len);
 
   if(len>=2)
   {
@@ -246,10 +266,11 @@ void readMessage(int index)
         sendSMS(from, "charging");
     }
     if(message[1].equalsIgnoreCase("status"))
-      sendSMS(from, generateStatusMessage());
+      statusResponse(from);
+//      sendSMS(from, generateStatusMessage());
 
     if(message[1].equalsIgnoreCase("version"))  //return the pipe's firmware version
-       sendSMS(from, pipeVersion);
+      sendSMS(from, pipeVersion);
 
     if(message[1].equalsIgnoreCase("verbose"))  //return the pipe's firmware version
     {
@@ -262,15 +283,16 @@ void readMessage(int index)
       setQuietMode();
       sendSMS(from, "quiet mode");
     }
-      
-       
+
+
     if(message[1].equalsIgnoreCase("test"))
     {
       startBlinking();
-      sendSMS(from, generateTestMessage());
+      testResponse(from);
+      //      sendSMS(from, generateTestMessage());
       stopBlinking();
     }
-    
+
     if(message[1].indexOf("load")>=0)
       load(message[1].substring(4, message[1].length()));  //it comes in the format "load1510XXXXXXXXXXXXXX", so slice out the "load" part and sent it on
   }
@@ -287,14 +309,88 @@ void load(String PIN)
   Serial<<readLine()<<endl;
 }
 
+/*
 String generateTestMessage()
+ {
+ unsigned char i;
+ String statusString="";
+ boolean fail=false;
+ #ifdef DEBUG  
+ Serial.println("generating status message");
+ #endif
+ disconnectPanel();  //disconnect the panel from the battery, so we can get good measurements of panel and battery voltage
+ float disconnectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
+ float disconnectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
+ connectPanel();
+ watchdogDelay(1000);    
+ panelCurrent=analogRead(PANEL_CURRENT)*4.15/1023/100/.003;
+ float connectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
+ float connectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
+ 
+ char reason[25];
+ if(disconnectedBatteryVoltage<10)
+ {
+ fail=true;
+ strcpy(reason,"low battery voltage");
+ }
+ 
+ if(disconnectedPanelVoltage<10)  //this is ONLY a daytime check, but we're checking to make sure there's a minimum VOC on the panel
+ {
+ fail=true;
+ strcpy(reason,"low panel voltage");
+ }
+ 
+ if(panelCurrent==0)  // this is ONLY a daytime check -- at night, the panel current will definitely be zero.
+ {
+ fail=true;
+ strcpy(reason,"battery not charging");
+ }
+ 
+ if(disconnectedBatteryVoltage>disconnectedPanelVoltage)  //this is ONLY a daytime check --- we check that the VOC of the panel is greater than the VOC of the battery, indicating that the panel _can_ charge the battery
+ {
+ fail=true;
+ strcpy(reason,"panel VOC too low");
+ }
+ 
+ if(fail)
+ {
+ statusString="test failed,";
+ statusString+=reason;
+ statusString+=",";
+ }
+ else
+ statusString="test passed,_,";
+ if(charging)
+ statusString+="charging,";
+ else
+ statusString+="disconnected,";
+ statusString+=pipeVersion;  
+ statusString+=',';
+ char temp[10];
+ floatToString(temp,disconnectedPanelVoltage,2);
+ statusString+=temp;
+ statusString+=",";
+ floatToString(temp,disconnectedBatteryVoltage,2);
+ statusString+=temp;
+ statusString+=",";
+ floatToString(temp,panelCurrent,2);
+ statusString+=temp;
+ statusString+=",";
+ floatToString(temp,connectedPanelVoltage,2);
+ statusString+=temp;
+ statusString+=",";
+ floatToString(temp,connectedBatteryVoltage,2);
+ statusString+=temp;
+ Serial<<statusString<<endl;
+ return statusString;
+ }
+ */
+
+void printTestMessage()
 {
   unsigned char i;
-  String statusString="";
+  //  String statusString="";
   boolean fail=false;
-#ifdef DEBUG  
-  Serial.println("generating status message");
-#endif
   disconnectPanel();  //disconnect the panel from the battery, so we can get good measurements of panel and battery voltage
   float disconnectedPanelVoltage=analogRead(PANEL_VOLTAGE)*5*4.15/1023;
   float disconnectedBatteryVoltage=analogRead(BATTERY_VOLTAGE)*5*4.15/1023;
@@ -330,40 +426,29 @@ String generateTestMessage()
   }
 
   if(fail)
-  {
-    statusString="test failed,";
-    statusString+=reason;
-    statusString+=",";
-  }
+    GSM<<"test failed,"<<reason<<",";
   else
-    statusString="test passed,_,";
+    GSM<<"test passed,_,";
   if(charging)
-    statusString+="charging,";
+    GSM<<"charging,";
   else
-    statusString+="disconnected,";
-  statusString+=pipeVersion;  
-  statusString+=',';
+    GSM<<"disconnected,";
+  GSM<<pipeVersion<<",";
   char temp[10];
   floatToString(temp,disconnectedPanelVoltage,2);
-  statusString+=temp;
-  statusString+=",";
+  GSM<<temp<<",";
   floatToString(temp,disconnectedBatteryVoltage,2);
-  statusString+=temp;
-  statusString+=",";
+  GSM<<temp<<",";
   floatToString(temp,panelCurrent,2);
-  statusString+=temp;
-  statusString+=",";
+  GSM<<temp<<",";
   floatToString(temp,connectedPanelVoltage,2);
-  statusString+=temp;
-  statusString+=",";
+  GSM<<temp<<",";
   floatToString(temp,connectedBatteryVoltage,2);
-  statusString+=temp;
-  Serial<<statusString<<endl;
-  return statusString;
-
+  GSM<<temp<<","<<signal<<"dBm"<<endl;
+  
 }
 
-
+/*
 String generateStatusMessage()
 {
   unsigned char i;
@@ -387,7 +472,43 @@ String generateStatusMessage()
   }
   Serial.println(statusString);
   return statusString;
+}
+*/
+void statusResponse(String number)
+{
+  GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
+  watchdogDelay(500);
+  GSM.print("AT+CMGS=\"");
+  GSM.print(number);
+  GSM.println("\"");//send sms message, be careful need to add a country code before the cellphone number
+  watchdogDelay(500);
+  printStatusMessage();
+  watchdogDelay(500);
+  GSM.println((char)26);//the ASCII code of the ctrl+z is 26
+  watchdogDelay(500);
+  GSM.println();
+  watchdogDelay(4000);
+  GSM.print("AT+CMGDA=\"DEL SENT\"\r\n");  //delete all sent messages
+  watchdogDelay(1000);
+  readLine();
+  readLine();
+}
 
+void printStatusMessage()
+{
+  unsigned char i;
+  char temp[10];
+#ifdef DEBUG  
+  Serial.println("generating status message");
+#endif
+  for(i=1;i<=8;i++)
+  {
+    readSample(data, samplePeriods-i);
+    GSM<<data.panelVoltage<<","<<data.batteryVoltage<<","<<data.panelEnergy<<",";
+    Serial<<data.panelVoltage<<","<<data.batteryVoltage<<","<<data.panelEnergy<<",";
+  }
+  GSM<<endl;
+  Serial<<endl;
 }
 
 //deletes an SMS message from memory
@@ -422,14 +543,15 @@ void sendSMS(String number, String message)
 
 void testResponse(String number)
 {
+  updateSignalStrength();
   GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
   watchdogDelay(500);
   GSM.print("AT+CMGS=\"");
   GSM.print(number);
   GSM.println("\"");//send sms message, be careful need to add a country code before the cellphone number
   watchdogDelay(500);
-  printTestMessage()
-    watchdogDelay(500);
+  printTestMessage();
+  watchdogDelay(500);
   GSM.println((char)26);//the ASCII code of the ctrl+z is 26
   watchdogDelay(500);
   GSM.println();
@@ -659,6 +781,7 @@ void disconnectPanel()
   digitalWrite(PANEL_EN, LOW);
   digitalWrite(CHARGING, LOW);
 }
+
 
 
 
