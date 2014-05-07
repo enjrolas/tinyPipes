@@ -1,14 +1,13 @@
 #include <avr/eeprom.h>
-char samplePeriods;
+unsigned char samplePeriods;
 
-#define DATA_START 8
+#define DATA_START 2
 
 #define PERIOD 1  //seconds between samples
 #define SAMPLE_PERIOD 10800  //three hours
 //#define SAMPLE_PERIOD 10  // total seconds 
-#define AVAILABLE_EEPROM 1000-DATA_START,  //there are 1000 available bytes of EEPROM
-#define SAMPLE_SIZE 16
-#define SAMPLES 62 
+#define AVAILABLE_EEPROM 1000  //there are 1000 available bytes of EEPROM
+
 
 struct Sample
 {
@@ -32,14 +31,11 @@ void saveSample(struct Sample sam)
 {
   eeprom_write_block((const void*)&sam, (void*)(DATA_START+(samplePeriods%((AVAILABLE_EEPROM-DATA_START)/sizeof(sam))*(sizeof(sam)))), sizeof(sam));  
   samplePeriods++;
-  if(samplePeriods>SAMPLES)
-    samplePeriods=0;
   writeIndex();
 }
 
 void readSample(struct Sample& sam, unsigned char index)
 {
-//  Serial<<sizeof(sam)<<endl;
   eeprom_read_block((void*)&sam, (void*)(DATA_START+index*(sizeof(sam))), sizeof(sam));  
 }
 

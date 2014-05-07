@@ -36,6 +36,8 @@ struct Sample currentSample;
 struct Sample data;
 long start, cycleTime;
 
+
+
 void setup()
 {
   Serial.begin(9600);
@@ -55,6 +57,7 @@ void setup()
   initPipe();
   setupWatchdog();
 }
+
 
 //boots or reboots the GSM module 
 void bootGSMModule()
@@ -139,6 +142,7 @@ void updateSignalStrength()
   signal=map(atoi(index),2,30,-110, -54);
   Serial<<signalStrength<<" "<<signal<<endl;
 }
+
 
 
 
@@ -254,16 +258,20 @@ void readMessage(int index)
     {
       setCharging();
       if(verbose)
-        sendSMS(from, "charging");
+        sendSMS(from, "disconnected");
     }
     if(message[1].equalsIgnoreCase("disconnect"))
     {
       setDisconnected();
       if(verbose)
-        sendSMS(from, "disconnected");
+        sendSMS(from, "charging");
     }
     if(message[1].equalsIgnoreCase("status"))
       statusResponse(from);
+//      sendSMS(from, generateStatusMessage());
+
+    if(message[1].equalsIgnoreCase("version"))  //return the pipe's firmware version
+      sendSMS(from, pipeVersion);
 
     if(message[1].equalsIgnoreCase("verbose"))  //return the pipe's firmware version
     {
@@ -286,21 +294,13 @@ void readMessage(int index)
       stopBlinking();
     }
 
-    if(message[1].indexOf("load")>=0)
-      load(message[1].substring(4, message[1].length()));  //it comes in the format "load1510XXXXXXXXXXXXXX", so slice out the "load" part and sent it on
+//    if(message[1].indexOf("load")>=0)
+//      load(message[1].substring(4, message[1].length()));  //it comes in the format "load1510XXXXXXXXXXXXXX", so slice out the "load" part and sent it on
   }
 
   free4split(words);
 }
 
-void load(String PIN)
-{
-  GSM.print("ATD");
-  GSM.print(PIN);
-  GSM.print(";\r\n");
-
-  Serial<<readLine()<<endl;
-}
 
 /*
 String generateTestMessage()
@@ -473,7 +473,7 @@ void statusResponse(String number)
   watchdogDelay(500);
   GSM.print("AT+CMGS=\"");
   GSM.print(number);
-  GSM.println("\"");
+  GSM.println("\"");//send sms message, be careful need to add a country code before the cellphone number
   watchdogDelay(500);
   printStatusMessage();
   watchdogDelay(500);
@@ -494,9 +494,9 @@ void printStatusMessage()
 #ifdef DEBUG  
   Serial.println("generating status message");
 #endif
-  for(i=0;i<=8;i++)
+  for(i=1;i<=8;i++)
   {
-    readSample(data, (samplePeriods-i)%SAMPLES);
+    readSample(data, samplePeriods-i);
     GSM<<data.panelVoltage<<","<<data.batteryVoltage<<","<<data.panelEnergy<<",";
     Serial<<data.panelVoltage<<","<<data.batteryVoltage<<","<<data.panelEnergy<<",";
   }

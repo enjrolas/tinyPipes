@@ -1,7 +1,6 @@
 #include<EEPROM.h>
 
 char * pipeVersion="v2.8";  //hardware/firmware version
-
 boolean charging=false;
 boolean firstBoot=false;
 boolean verbose=false;
@@ -25,10 +24,7 @@ void initPipe()
   if(firstBoot)
     EEPROM.write(CHARGE_MODE,charging);
   else
-  {
     charging=EEPROM.read(CHARGE_MODE);
-    verbose=EEPROM.read(VERBOSE);
-  }
 }
 
 void setVersion()

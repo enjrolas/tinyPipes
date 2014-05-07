@@ -1,6 +1,8 @@
 #include <Streaming.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
+SoftwareSerial GSM(3,2);
+
 #include "delay.h"
 #include "samples.h"
 #include "floatToString.h"
@@ -30,11 +32,12 @@ int samples=0;
 int cycles=0;  //number of charge cycles
 int m=0;
 
-SoftwareSerial GSM(3,2);
 
 struct Sample currentSample;
 struct Sample data;
 long start, cycleTime;
+void statusResponse(String number);
+void load(String PIN);
 
 void setup()
 {
@@ -181,37 +184,41 @@ void readMessage(int index)
   GSM.print(index, DEC);
   GSM.print("\r\n");
 
-  String from, date, time, timeStamp;
 
 
-  int i;
-  String message[2];
+  unsigned char i;
   readLine();
   readLine();
-  for(i=0;i<2;i++)
-    message[i]=readLine();
-
-
-  int firstComma=message[0].indexOf(",");
-  int secondComma=message[0].indexOf(",", firstComma+1);
-  from=message[0].substring(firstComma+1, secondComma);
-  timeStamp=message[0].substring(message[0].lastIndexOf("\"",message[0].length()-2));
-  from.replace("\"","");
-  timeStamp.replace("\"","");
-  /*
-  Serial<<"Message metadata: "<<message[0]<<endl;
-  Serial<<"Message content: "<<message[1]<<endl;
-  Serial<<"Time Stamp: "<<timeStamp<<endl;
-  Serial<<"From Number: "<<from<<endl;
-  */
-  Serial<<message[0]<<endl<<message[1]<<endl<<timeStamp<<endl<<from<<endl;
-  message[1].trim();
-
-  char **words;
+  //  char messageContent[160];
+  char temp[200];
+//  char content[200];
+  char ** words;
   size_t len=0;
-  char temp[160];
-  message[1].toCharArray(temp, 160);
-  words = split(temp, " ", &len);
+  String content;
+  char from[18];
+  char metadata[22];
+  //  String temp=readLine();
+  horribleReadline(temp,200);
+  strcpy(metadata,strtok(temp, ","));  //throw out everything before the first line
+  strcpy(from, strtok(NULL, ","));  //the second phone number is in between the commas.
+  removeChar(from, '\"');
+  strtok(NULL, ","); 
+//  if(strstr(metadata, "READ")!=NULL)  //check the metadata to see if this is a message or some weird message.  Like, ew!
+ // {
+    boolean phoneNumber=false, fromNumber=false, message=false;
+    uint16_t before;
+    free(metadata);
+    for(unsigned char a=0;a<sizeof(temp);a++)
+      temp[a]=0;
+    char scratch[22];
+    horribleReadline(temp, 200);
+    words = split(temp, " ", &len);
+//    horribleReadline(temp+getLength(temp),160);
+ // }
+ content=temp;
+ content.trim();
+  Serial<<":::"<<endl<<from<<endl<<metadata<<endl<<temp<<endl<<content<<endl<<  len<<endl<<":::"<<endl;
+
 
   if(len>=2)
   {
@@ -250,35 +257,35 @@ void readMessage(int index)
 
   else
   {
-    if(message[1].equalsIgnoreCase("connect"))  
+    Serial<<content<<endl;
+    if(content.equalsIgnoreCase("connect"))  
     {
       setCharging();
       if(verbose)
         sendSMS(from, "charging");
     }
-    if(message[1].equalsIgnoreCase("disconnect"))
+    if(content.equalsIgnoreCase("disconnect"))
     {
       setDisconnected();
       if(verbose)
         sendSMS(from, "disconnected");
     }
-    if(message[1].equalsIgnoreCase("status"))
+    if(content.equalsIgnoreCase("status"))
       statusResponse(from);
 
-    if(message[1].equalsIgnoreCase("verbose"))  //return the pipe's firmware version
+    if(content.equalsIgnoreCase("verbose"))  //return the pipe's firmware version
     {
       setVerboseMode();
       sendSMS(from, "verbose mode");
     }
 
-    if(message[1].equalsIgnoreCase("quiet"))  //return the pipe's firmware version
+    if(content.equalsIgnoreCase("quiet"))  //return the pipe's firmware version
     {
       setQuietMode();
       sendSMS(from, "quiet mode");
     }
 
-
-    if(message[1].equalsIgnoreCase("test"))
+    if(content.equalsIgnoreCase("test"))
     {
       startBlinking();
       testResponse(from);
@@ -286,8 +293,8 @@ void readMessage(int index)
       stopBlinking();
     }
 
-    if(message[1].indexOf("load")>=0)
-      load(message[1].substring(4, message[1].length()));  //it comes in the format "load1510XXXXXXXXXXXXXX", so slice out the "load" part and sent it on
+    if(content.indexOf("load")>=0)
+      load(content.substring(4, content.length()));  //it comes in the format "load1510XXXXXXXXXXXXXX", so slice out the "load" part and sent it on
   }
 
   free4split(words);
@@ -534,9 +541,8 @@ void sendSMS(String number, String message)
   readLine();
 }
 
-void testResponse(String number)
+void testResponse(char* number)
 {
-  updateSignalStrength();
   GSM.print("AT+CMGF=1\r");    //Because we want to send the SMS in text mode
   watchdogDelay(500);
   GSM.print("AT+CMGS=\"");
@@ -578,6 +584,7 @@ void checkAllMessages()
     Serial.print((char)GSM.read());
 }
 
+/*
 void checkForMessages()
 {
   if(GSM.available()>0)
@@ -597,6 +604,39 @@ void checkForMessages()
     } 
   }
 }
+*/
+
+void checkForMessages()
+{
+  flushBuffer();
+#ifdef DEBUG
+  Serial<<"checking messages...\n";
+#endif
+
+  GSM.println("AT+CMGL=\"ALL\"");
+  watchdogDelay(500);
+  boolean validMessage=false;
+  char line[100];
+  int lineNum=0;
+  while((!validMessage)&&(GSM.available()>0))
+  {
+    horribleReadline(line, sizeof(line));
+    Serial<<line<<"\n";
+    if(strstr(line, "CMGL:")!=NULL)  //there's a new unread message in there
+      validMessage=true;
+  }
+  if(validMessage)
+  {
+    //get the message index
+    substring(line, line, getIndex(line, ':')+2, getIndex(line, ','));
+    int index=atoi(line);
+    readMessage(index);
+    deleteMessage(index);
+  }
+  else
+    deleteMessage(index);  
+}
+
 
 void writeCycleTime()
 {
