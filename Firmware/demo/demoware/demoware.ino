@@ -48,12 +48,15 @@ void setup()
   pinMode(SIM_STATUS, INPUT);
   Serial.println("TinyPipes is booting up...");
   startBlinking();  //flash the ENABLED LED until the GSM module is ready to receive messages
+
   bootGSMModule();
   checkSIM();
+  
   wattSeconds=0;
   samples=0;
   initPipe();
   setupWatchdog();
+  
 }
 
 //boots or reboots the GSM module 
@@ -160,7 +163,7 @@ int checkSIM()
   }
   else
   {
-    stopBlinking();
+//    stopBlinking();
     digitalWrite(ENABLED, HIGH);  //turn on the ENABLED LED to indicate that the SIM module is now ready for business
     return 0;  //all's well
   }
@@ -280,10 +283,10 @@ void readMessage(int index)
 
     if(message[1].equalsIgnoreCase("test"))
     {
-      startBlinking();
+//      startBlinking();
       testResponse(from);
       //      sendSMS(from, generateTestMessage());
-      stopBlinking();
+ //     stopBlinking();
     }
 
     if(message[1].indexOf("load")>=0)
@@ -561,6 +564,7 @@ void loop()
   watchdogDelay(PERIOD*1000);
   readValues();
   printValues();
+  
   if(charging)
     chargeBattery();
   else
