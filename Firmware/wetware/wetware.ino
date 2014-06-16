@@ -339,7 +339,7 @@ String generateTestMessage()
  strcpy(reason,"battery not charging");
  }
  
- if(disconnectedBatteryVoltage>disconnectedPanelVoltage)  //this is ONLY a daytime check --- we check that the VOC of the panel is greater than the VOC of the battery, indicating that the panel _can_ charge the battery
+ if(disconnectedBatteryVoltage>(disconnectedPanelVoltage-.5))  //this is ONLY a daytime check --- we check that the VOC of the panel is greater than the VOC of the battery, indicating that the panel _can_ charge the battery
  {
  fail=true;
  strcpy(reason,"panel VOC too low");
@@ -406,11 +406,13 @@ void printTestMessage()
     strcpy(reason,"low panel voltage");
   }
 
+  /*
   if(panelCurrent==0)  // this is ONLY a daytime check -- at night, the panel current will definitely be zero.
   {
     fail=true;
     strcpy(reason,"battery not charging");
   }
+  */
 
   if(disconnectedBatteryVoltage>disconnectedPanelVoltage)  //this is ONLY a daytime check --- we check that the VOC of the panel is greater than the VOC of the battery, indicating that the panel _can_ charge the battery
   {
@@ -686,6 +688,7 @@ void connectPanel()
 void chargeBattery(){
   digitalWrite(CHARGING, HIGH);
   Serial.println(batteryVoltage);
+  Serial.println(panelVoltage);
   Serial.println(panelCurrent);
   if(chargeMode==CONSTANT_VOLTAGE)
   {
@@ -758,7 +761,7 @@ void chargeBattery(){
     }
   }
 
-
+/*
   if(panelVoltage<batteryVoltage)  //the panel voltage is lower than the battery voltage.  Might as well disconnect the battery
   {
 #ifdef DEBUG  
@@ -766,6 +769,7 @@ void chargeBattery(){
 #endif
     disconnectPanel();
   }
+  */
 }
 
 
